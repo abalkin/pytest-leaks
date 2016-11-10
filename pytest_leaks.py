@@ -3,8 +3,10 @@
 A pytest plugin to trace resource leaks
 """
 from __future__ import print_function
-import pytest
+
 from array import array
+
+import pytest
 
 
 def pytest_addoption(parser):
@@ -24,9 +26,11 @@ reports are written to.  These parameters all have defaults (5, 4 and
 '''
     )
 
-    parser.addini('leaks_stab', 'the number of times the test is run to let'
-                  ' gettotalrefcount settle down', default=5)
-    parser.addini('leaks_run', 'the number of times the test is run', default=4)
+    parser.addini('leaks_stab',
+                  'the number of times the test is run to let '
+                  'gettotalrefcount settle down', default=5)
+    parser.addini('leaks_run',
+                  'the number of times the test is run', default=4)
 
 
 def pytest_configure(config):
@@ -45,9 +49,11 @@ def config_options(request):
 def getini(request):
     return request.config.getini
 
+
 @pytest.fixture
 def leaks_checker(request):
     return request.config.pluginmanager.get_plugin('leaks_checker')
+
 
 N = 2  # number of resource counters
 
