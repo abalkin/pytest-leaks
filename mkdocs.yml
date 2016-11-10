@@ -1,0 +1,10 @@
+site_name: pytest-leaks
+site_description: A pytest plugin to trace resource leaks.
+site_author: Alexander Belopolsky
+
+theme: readthedocs
+
+repo_url: https://github.com/abalkin/pytest-leaks
+
+pages:
+- Home: index.md
