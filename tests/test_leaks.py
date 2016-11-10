@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 
-def test_bar_fixture(testdir):
+def test_config_options_fixture(testdir):
     """Make sure that pytest accepts our fixture."""
 
     # create a temporary pytest test module
     testdir.makepyfile("""
-        def test_sth(bar):
-            assert bar == "europython2015"
+        def test_sth(config_options):
+            assert config_options.leaks == ":"
     """)
 
     # run pytest with the following cmd args
     result = testdir.runpytest(
-        '--foo=europython2015',
+        '-R', ':',
         '-v'
     )
 
@@ -32,25 +32,21 @@ def test_help_message(testdir):
     # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
         'leaks:',
-        '*--foo=DEST_FOO*Set the value for the fixture "bar".',
+        '*-R LEAKS, --leaks=LEAKS',
     ])
 
 
-def test_hello_ini_setting(testdir):
+def test_leaks_ini_setting(testdir):
     testdir.makeini("""
         [pytest]
-        HELLO = world
+        leaks_stab = 2
+        leaks_run = 1
     """)
 
     testdir.makepyfile("""
-        import pytest
-
-        @pytest.fixture
-        def hello(request):
-            return request.config.getini('HELLO')
-
-        def test_hello_world(hello):
-            assert hello == 'world'
+        def test_hello_world(getini):
+            assert getini('leaks_stab') == '2'
+            assert getini('leaks_run') == '1'
     """)
 
     result = testdir.runpytest('-v')
