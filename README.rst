@@ -4,6 +4,7 @@ pytest-leaks
 .. image:: https://badge.fury.io/py/pytest-leaks.svg
     :target: https://badge.fury.io/py/pytest-leaks
     :alt: See Package Info on PyPI
+
 .. image:: https://travis-ci.org/abalkin/pytest-leaks.svg?branch=master
     :target: https://travis-ci.org/abalkin/pytest-leaks
     :alt: See Build Status on Travis CI
