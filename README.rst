@@ -1,5 +1,5 @@
-pytest-leaks
-===================================
+pytest-leaks - A pytest plugin to trace resource leaks
+======================================================
 
 .. image:: https://badge.fury.io/py/pytest-leaks.svg
     :target: https://badge.fury.io/py/pytest-leaks
@@ -14,10 +14,6 @@ pytest-leaks
     :alt: See Build Status on AppVeyor
 
 A pytest plugin to trace resource leaks.
-
-----
-
-This `Pytest`_ plugin was generated with `Cookiecutter`_ along with `@hackebrot`_'s `Cookiecutter-pytest-plugin`_ template.
 
 
 Features
@@ -53,13 +49,19 @@ the coverage at least stays the same before you submit a pull request.
 License
 -------
 
-Distributed under the terms of the `MIT`_ license, "pytest-leaks" is free and open source software
+Distributed under the terms of the `MIT`_ license, "pytest-leaks" is free and open source software.
 
 
 Issues
 ------
 
 If you encounter any problems, please `file an issue`_ along with a detailed description.
+
+Acknowledgements
+----------------
+
+This `Pytest`_ plugin was initially generated with `Cookiecutter`_ along with `@hackebrot`_'s
+`Cookiecutter-pytest-plugin`_ template.
 
 .. _`Cookiecutter`: https://github.com/audreyr/cookiecutter
 .. _`@hackebrot`: https://github.com/hackebrot
