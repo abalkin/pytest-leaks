@@ -75,8 +75,14 @@ def test_leaks_checker(testdir):
 
     # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
-        '*::test_leaks PASSED',
+        '*::test_leaks LEAKED',
     ])
 
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
+
+
+def test_leaks_checker_raw(leaks_checker):
+    # When py.test is invoked without -R, leaks_checker is None.
+    if leaks_checker is not None:
+        leaks_checker.leak()
