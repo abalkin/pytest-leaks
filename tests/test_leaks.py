@@ -58,3 +58,27 @@ def test_leaks_ini_setting(testdir):
 
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
+
+
+def test_leaks_checker(testdir):
+    # create a temporary pytest test module
+    testdir.makepyfile("""
+        def test_leaks(leaks_checker):
+            leaks_checker.leak()
+    """)
+
+    # run pytest with the following cmd args
+    result = testdir.runpytest(
+        '-R', ':',
+        '-v'
+    )
+
+    # fnmatch_lines does an assertion internally
+    result.stdout.fnmatch_lines([
+        '*::test_leaks PASSED',
+    ])
+
+    # make sure that that we get a '0' exit code for the testsuite
+    assert result.ret == 0
+
+
