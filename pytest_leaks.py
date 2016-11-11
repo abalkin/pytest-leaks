@@ -5,6 +5,7 @@ A pytest plugin to trace resource leaks
 from __future__ import print_function
 
 import sys
+import gc
 from array import array
 from collections import OrderedDict as odict
 
@@ -77,9 +78,9 @@ class LeakChecker(object):
     def find_resources(self):
         resources = odict()
         resources['test'] = lambda: self.test_resource_count
-        if self.count_blocks:
-            resources['refs'] = sys.gettotalrefcount
         if self.count_refs:
+            resources['refs'] = sys.gettotalrefcount
+        if self.count_blocks:
             resources['blocks'] = sys.getallocatedblocks
         return resources
 
@@ -87,6 +88,7 @@ class LeakChecker(object):
         self.test_resource_count += 1
 
     def get_counts(self):
+        gc.collect()
         counts = [f() for f in self.resources.values()]
         return array('l', counts)
 
