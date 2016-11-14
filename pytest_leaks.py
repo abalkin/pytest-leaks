@@ -6,12 +6,15 @@ from __future__ import print_function
 
 import sys
 import gc
+import warnings
+from inspect import isabstract
 from array import array
 from collections import OrderedDict as odict
 
 import pytest
 
 _py3 = sys.version_info[0] >= 3
+
 
 def pytest_addoption(parser):
     group = parser.getgroup('leaks')
@@ -102,6 +105,9 @@ class LeakChecker(object):
                 leaks[n] = a - b
         return leaks
 
+    def hunt_leaks(self, func):
+        return hunt_leaks(func, self.stab, self.run)
+
     @pytest.hookimpl(hookwrapper=True, trylast=True)
     def pytest_runtest_call(self, item):
         for _ in range(self.stab):
@@ -133,6 +139,64 @@ class LeakChecker(object):
             outcome.force_result(('leaked', 'L', 'LEAKED'))
 
 
+def hunt_leaks(func, nwarmup, ntracked):
+    """Run a func multiple times, looking for leaks."""
+    # This code is hackish and inelegant, but it seems to do the job.
+    import copyreg
+    import collections.abc
+
+    # Save current values for cleanup() to restore.
+    fs = warnings.filters[:]
+    ps = copyreg.dispatch_table.copy()
+    pic = sys.path_importer_cache.copy()
+    try:
+        import zipimport
+    except ImportError:
+        zdc = None  # Run unmodified on platforms without zipimport support
+    else:
+        zdc = zipimport._zip_directory_cache.copy()
+    abcs = {}
+    for abc in [getattr(collections.abc, a) for a in collections.abc.__all__]:
+        if not isabstract(abc):
+            continue
+        for obj in abc.__subclasses__() + [abc]:
+            abcs[obj] = obj._abc_registry.copy()
+    repcount = nwarmup + ntracked
+    rc_deltas = [0] * repcount
+    alloc_deltas = [0] * repcount
+    # initialize variables to make pyflakes quiet
+    rc_before = alloc_before = 0
+    for i in range(repcount):
+        func()
+        alloc_after, rc_after = cleanup(fs, ps, pic, zdc, abcs)
+        if i >= nwarmup:
+            rc_deltas[i] = rc_after - rc_before
+            alloc_deltas[i] = alloc_after - alloc_before
+        alloc_before = alloc_after
+        rc_before = rc_after
+
+    # These checkers return False on success, True on failure
+    def check_rc_deltas(deltas):
+        return any(deltas)
+
+    def check_alloc_deltas(deltas):
+        # At least 1/3rd of 0s
+        if 3 * deltas.count(0) < len(deltas):
+            return True
+        # Nothing else than 1s, 0s and -1s
+        if not set(deltas) <= {1, 0, -1}:
+            return True
+        return False
+
+    leaks = {}
+    for deltas, item_name, checker in [
+        (rc_deltas, 'refs', check_rc_deltas),
+        (alloc_deltas, 'blocks', check_alloc_deltas)
+    ]:
+        if checker(deltas):
+            leaks[item_name] = deltas[nwarmup:]
+    return leaks
+
 # The following code is mostly copied from Python 2.7 / 3.5 dash_R_cleanup
 if _py3:
     def cleanup(warning_filters, copyreg_dispatch_table, path_importer_cache,
@@ -152,7 +216,6 @@ if _py3:
         import collections.abc
         from distutils.dir_util import _path_created
         from weakref import WeakSet
-        from inspect import isabstract
 
         # Clear the warnings registry, so they can be displayed again
         for mod in sys.modules.values():

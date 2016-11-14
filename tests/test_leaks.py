@@ -86,3 +86,21 @@ def test_leaks_checker_raw(leaks_checker):
     # When py.test is invoked without -R, leaks_checker is None.
     if leaks_checker is not None:
         leaks_checker.leak()
+
+garbage = []
+
+
+def leaking():
+    global garbage
+    garbage.append(None)
+
+
+def test_hunt_leaks(leaks_checker):
+    # When py.test is invoked without -R, leaks_checker is None.
+    if leaks_checker is None:
+        return
+    leaks = leaks_checker.hunt_leaks(lambda: None)
+    assert not leaks
+    leaks = leaks_checker.hunt_leaks(leaking)
+    assert leaks
+    assert leaks['refs'] == [1]
