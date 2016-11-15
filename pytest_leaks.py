@@ -138,6 +138,15 @@ class LeakChecker(object):
             # cat, letter, word
             outcome.force_result(('leaked', 'L', 'LEAKED'))
 
+    @pytest.hookimpl
+    def pytest_terminal_summary(self, terminalreporter, exitstatus):
+        tr = terminalreporter
+        leaked = tr.getreports('leaked')
+        if leaked:
+            tr.write_sep("=", 'leaks summary', cyan=True)
+            for rep in leaked:
+                tr.line("%s: %r" % (rep.nodeid, rep.leaks))
+
 
 def hunt_leaks(func, nwarmup, ntracked):
     """Run a func multiple times, looking for leaks."""
