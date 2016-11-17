@@ -4,13 +4,13 @@ import sys
 _py3 = sys.version_info > (3, 0)
 
 
-def test_config_options_fixture(testdir, pytestconfig):
+def test_config_options_fixture(testdir):
     """Make sure that pytest accepts our fixture."""
 
     # create a temporary pytest test module
     testdir.makepyfile("""
-        def test_sth(config_options):
-            assert config_options.leaks == ":"
+        def test_sth(pytestconfig):
+            assert pytestconfig.option.leaks == ":"
     """)
 
     # run pytest with the following cmd args in a subprocess
@@ -48,7 +48,8 @@ def test_leaks_ini_setting(testdir):
     """)
 
     testdir.makepyfile("""
-        def test_hello_world(getini):
+        def test_hello_world(pytestconfig):
+            getini = pytestconfig.getini
             assert getini('leaks_stab') == '2'
             assert getini('leaks_run') == '1'
     """)

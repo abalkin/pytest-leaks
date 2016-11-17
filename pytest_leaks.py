@@ -47,16 +47,6 @@ def pytest_configure(config):
 
 
 @pytest.fixture
-def config_options(request):
-    return request.config.option
-
-
-@pytest.fixture
-def getini(request):
-    return request.config.getini
-
-
-@pytest.fixture
 def leaks_checker(request):
     return request.config.pluginmanager.get_plugin('leaks_checker')
 
