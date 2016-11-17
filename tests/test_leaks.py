@@ -5,7 +5,7 @@ import pytest
 
 _py3 = sys.version_info > (3, 0)
 
-with_pydebug = pytest.mark.skipif(hasattr(sys, 'getallocatedblocks'),
+with_pydebug = pytest.mark.skipif(not hasattr(sys, 'getallocatedblocks'),
                                   reason='--with-pydebug build is required')
 
 
@@ -70,6 +70,18 @@ def test_leaks_ini_setting(testdir):
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
 
+@pytest.mark.parametrize('run,stab', [
+    (2, 2),
+    (3, 1),
+])
+def test_leaks_option_parsing(testdir, run, stab):
+    testdir.makepyfile("""
+        def test_leaks(leaks_checker):
+            assert leaks_checker.stab == %d
+            assert leaks_checker.run == %d
+    """ % (run, stab))
+    result = testdir.runpytest('-R', '%d:%d' % (run, stab))
+    assert result.ret == 0
 
 @with_pydebug
 def test_leaks_checker(testdir):
