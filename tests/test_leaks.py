@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 import sys
 
+import pytest
+
 _py3 = sys.version_info > (3, 0)
 
+with_pydebug = pytest.mark.skipif(hasattr(sys, 'getallocatedblocks'),
+                                  reason='--with-pydebug build is required')
 
+
+@with_pydebug
 def test_config_options_fixture(testdir):
     """Make sure that pytest accepts our fixture."""
 
@@ -65,6 +71,7 @@ def test_leaks_ini_setting(testdir):
     assert result.ret == 0
 
 
+@with_pydebug
 def test_leaks_checker(testdir):
     # create a temporary pytest test module
     testdir.makepyfile(test_leaks_code)
@@ -82,6 +89,7 @@ def test_leaks_checker(testdir):
 
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
+
 
 leaking = None
 test_leaks_code = """
