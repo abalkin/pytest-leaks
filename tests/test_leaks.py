@@ -5,7 +5,7 @@ import pytest
 
 _py3 = sys.version_info > (3, 0)
 
-with_pydebug = pytest.mark.skipif(not hasattr(sys, 'getallocatedblocks'),
+with_pydebug = pytest.mark.skipif(not hasattr(sys, 'gettotalrefcount'),
                                   reason='--with-pydebug build is required')
 
 
