@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='pytest-leaks',
-    version='0.1.0',
+    version='0.2.0',
     author='Alexander Belopolsky',
     author_email='alexander.belopolsky@gmail.com',
     maintainer='Alexander Belopolsky',
@@ -30,11 +30,6 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Testing',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',

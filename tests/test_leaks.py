@@ -1,17 +1,27 @@
 # -*- coding: utf-8 -*-
+import sys
+
+import pytest
+
+_py3 = sys.version_info > (3, 0)
+
+with_pydebug = pytest.mark.skipif(hasattr(sys, 'getallocatedblocks'),
+                                  reason='--with-pydebug build is required')
 
 
+@with_pydebug
 def test_config_options_fixture(testdir):
     """Make sure that pytest accepts our fixture."""
 
     # create a temporary pytest test module
     testdir.makepyfile("""
-        def test_sth(config_options):
-            assert config_options.leaks == ":"
+        def test_sth(pytestconfig):
+            assert pytestconfig.option.leaks == ":"
     """)
 
-    # run pytest with the following cmd args
-    result = testdir.runpytest(
+    # run pytest with the following cmd args in a subprocess
+    # for some reason an in-process run reports leaks
+    result = testdir.runpytest_subprocess(
         '-R', ':',
         '-v'
     )
@@ -44,7 +54,8 @@ def test_leaks_ini_setting(testdir):
     """)
 
     testdir.makepyfile("""
-        def test_hello_world(getini):
+        def test_hello_world(pytestconfig):
+            getini = pytestconfig.getini
             assert getini('leaks_stab') == '2'
             assert getini('leaks_run') == '1'
     """)
@@ -60,12 +71,10 @@ def test_leaks_ini_setting(testdir):
     assert result.ret == 0
 
 
+@with_pydebug
 def test_leaks_checker(testdir):
     # create a temporary pytest test module
-    testdir.makepyfile("""
-        def test_leaks(leaks_checker):
-            leaks_checker.leak()
-    """)
+    testdir.makepyfile(test_leaks_code)
 
     # run pytest with the following cmd args
     result = testdir.runpytest(
@@ -75,14 +84,31 @@ def test_leaks_checker(testdir):
 
     # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
-        '*::test_leaks LEAKED',
+        '*::test_refleaks LEAKED',
     ])
 
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
 
 
-def test_leaks_checker_raw(leaks_checker):
+leaking = None
+test_leaks_code = """
+garbage = []
+def leaking():
+    garbage.append(None)
+def test_refleaks():
+    leaking()
+"""
+
+exec(test_leaks_code)
+
+
+def test_hunt_leaks(leaks_checker):
     # When py.test is invoked without -R, leaks_checker is None.
-    if leaks_checker is not None:
-        leaks_checker.leak()
+    if leaks_checker is None:
+        return
+    leaks = leaks_checker.hunt_leaks(lambda: None)
+    assert not leaks
+    leaks = leaks_checker.hunt_leaks(leaking)
+    assert leaks
+    assert leaks['refs'] == [1]
