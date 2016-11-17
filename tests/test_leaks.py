@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+import sys
+
+_py3 = sys.version_info > (3, 0)
 
 
-def test_config_options_fixture(testdir):
+def test_config_options_fixture(testdir, pytestconfig):
     """Make sure that pytest accepts our fixture."""
 
     # create a temporary pytest test module
@@ -10,8 +13,9 @@ def test_config_options_fixture(testdir):
             assert config_options.leaks == ":"
     """)
 
-    # run pytest with the following cmd args
-    result = testdir.runpytest(
+    # run pytest with the following cmd args in a subprocess
+    # for some reason an in-process run reports leaks
+    result = testdir.runpytest_subprocess(
         '-R', ':',
         '-v'
     )
@@ -62,10 +66,7 @@ def test_leaks_ini_setting(testdir):
 
 def test_leaks_checker(testdir):
     # create a temporary pytest test module
-    testdir.makepyfile("""
-        def test_leaks(leaks_checker):
-            leaks_checker.leak()
-    """)
+    testdir.makepyfile(test_leaks_code)
 
     # run pytest with the following cmd args
     result = testdir.runpytest(
@@ -75,24 +76,22 @@ def test_leaks_checker(testdir):
 
     # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
-        '*::test_leaks LEAKED',
+        '*::test_refleaks LEAKED',
     ])
 
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
 
-
-def test_leaks_checker_raw(leaks_checker):
-    # When py.test is invoked without -R, leaks_checker is None.
-    if leaks_checker is not None:
-        leaks_checker.leak()
-
+leaking = None
+test_leaks_code = """
 garbage = []
-
-
 def leaking():
-    global garbage
     garbage.append(None)
+def test_refleaks():
+    leaking()
+"""
+
+exec(test_leaks_code)
 
 
 def test_hunt_leaks(leaks_checker):

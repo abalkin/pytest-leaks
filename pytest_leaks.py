@@ -8,7 +8,6 @@ import sys
 import gc
 import warnings
 from inspect import isabstract
-from array import array
 from collections import OrderedDict as odict
 
 import pytest
@@ -70,73 +69,36 @@ class LeakChecker(object):
     def __init__(self, config):
         self.stab = 4
         self.run = 1
-        # TODO: det defaults from config.
-        self.count_blocks = 0 and hasattr(sys, 'getallocatedblocks')
-        self.count_refs = 1 and hasattr(sys, 'gettotalrefcount')
-        self.test_resource_count = 0
-        self.resources = self.find_resources()
-        n = len(self.resources)
-        self.counts_before = array('l', [0] * n)
-        self.counts_after = array('l', [0] * n)
-
-    def find_resources(self):
-        resources = odict()
-        resources['test'] = lambda: self.test_resource_count
-        if self.count_refs:
-            resources['refs'] = sys.gettotalrefcount
-        if self.count_blocks:
-            resources['blocks'] = sys.getallocatedblocks
-        return resources
-
-    def leak(self):
-        self.test_resource_count += 1
-
-    def get_counts(self):
-        gc.collect()
-        counts = [f() for f in self.resources.values()]
-        return array('l', counts)
-
-    def get_leaks(self):
-        leaks = Leaks()
-        for n, (b, a) in zip(self.resources,
-                             zip(self.counts_before,
-                                 self.counts_after)):
-            if b != a:
-                leaks[n] = a - b
-        return leaks
+        # TODO: get defaults from config.
+        # Get access to the builtin "runner" plugin.
+        self.runner = config.pluginmanager.get_plugin('runner')
+        self.leaks = {}  # nodeid -> leaks
 
     def hunt_leaks(self, func):
         return hunt_leaks(func, self.stab, self.run)
 
-    @pytest.hookimpl(hookwrapper=True, trylast=True)
-    def pytest_runtest_call(self, item):
-        for _ in range(self.stab):
-            item.runtest()  # warm-up runs
-        self.counts_before[:] = self.get_counts()
-        for _ in range(self.run - 1):
-            item.runtest()  # extra runs
-        outcome = yield  # This runs the test for the last time
-        self.counts_after[:] = self.get_counts()
-        leaks = self.get_leaks()
-        if leaks:
-            outcome.force_result(leaks)
+    @pytest.hookimpl(hookwrapper=True)
+    def pytest_runtest_protocol(self, item, nextitem):
+        def run_test():
+            hook = item.ihook
+            hook.pytest_runtest_setup(item=item)
+            hook.pytest_runtest_call(item=item)
+            hook.pytest_runtest_teardown(item=item, nextitem=nextitem)
 
-    @pytest.hookimpl(hookwrapper=True, trylast=True)
-    def pytest_runtest_makereport(self, item, call):
-        outcome = yield
-        # Find Leaks object in result
-        if call.when == 'call':
-            # NB: call may not have the result attribute
-            r = getattr(call, 'result', None)
-            if isinstance(r, Leaks):
-                outcome.result.leaks = r
+        call = self.runner.CallInfo(lambda: self.hunt_leaks(run_test),
+                                    'leakshunt')
+        if call.excinfo is None and call.result:
+            self.leaks[item.nodeid] = call.result
+        yield
 
     @pytest.hookimpl(hookwrapper=True, trylast=True)
     def pytest_report_teststatus(self, report):
         outcome = yield
-        if hasattr(report, 'leaks'):
-            # cat, letter, word
-            outcome.force_result(('leaked', 'L', 'LEAKED'))
+        if report.when == 'call' and report.outcome == 'passed':
+            leaks = self.leaks.get(report.nodeid)
+            if leaks:
+                # cat, letter, word
+                outcome.force_result(('leaked', 'L', 'LEAKED'))
 
     @pytest.hookimpl
     def pytest_terminal_summary(self, terminalreporter, exitstatus):
@@ -145,7 +107,7 @@ class LeakChecker(object):
         if leaked:
             tr.write_sep("=", 'leaks summary', cyan=True)
             for rep in leaked:
-                tr.line("%s: %r" % (rep.nodeid, rep.leaks))
+                tr.line("%s: %r" % (rep.nodeid, self.leaks[rep.nodeid]))
 
 
 def hunt_leaks(func, nwarmup, ntracked):
@@ -197,7 +159,7 @@ def hunt_leaks(func, nwarmup, ntracked):
             return True
         return False
 
-    leaks = {}
+    leaks = Leaks()
     for deltas, item_name, checker in [
         (rc_deltas, 'refs', check_rc_deltas),
         (alloc_deltas, 'blocks', check_alloc_deltas)
@@ -211,7 +173,6 @@ if _py3:
     def cleanup(warning_filters, copyreg_dispatch_table, path_importer_cache,
                 zip_directory_cache, abcs):
         import copyreg
-        import gc
         import re
         import warnings
         import _strptime
@@ -249,7 +210,8 @@ if _py3:
         sys._clear_type_cache()
 
         # Clear ABC registries, restoring previously saved ABC registries.
-        for abc in [getattr(collections.abc, a) for a in collections.abc.__all__]:
+        for a in collections.abc.__all__:
+            abc = getattr(collections.abc, a)
             if not isabstract(abc):
                 continue
             for obj in abc.__subclasses__() + [abc]:
