@@ -57,9 +57,20 @@ class Leaks(odict):
 
 class LeakChecker(object):
     def __init__(self, config):
-        self.stab = 4
-        self.run = 1
-        # TODO: get defaults from config.
+        self.stab = config.getini('leaks_stab')
+        self.run = config.getini('leaks_run')
+        leaks_option_parts = config.getvalue("leaks").split(':')
+        if len(leaks_option_parts) > 1:
+            try:
+                self.stab = int(leaks_option_parts[0])
+            except ValueError:
+                pass
+            try:
+                self.run = int(leaks_option_parts[1])
+            except ValueError:
+                pass
+        # TODO: warn about invalid -R values.
+        # pytest.set_trace()
         # Get access to the builtin "runner" plugin.
         self.runner = config.pluginmanager.get_plugin('runner')
         self.leaks = {}  # nodeid -> leaks
