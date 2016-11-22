@@ -4,11 +4,11 @@ A pytest plugin to trace resource leaks
 """
 from __future__ import print_function
 
-import sys
 import gc
+import sys
 import warnings
-from inspect import isabstract
 from collections import OrderedDict as odict
+from inspect import isabstract
 
 import pytest
 
@@ -168,6 +168,7 @@ def hunt_leaks(func, nwarmup, ntracked):
         if checker(deltas):
             leaks[item_name] = deltas[nwarmup:]
     return leaks
+
 
 # The following code is mostly copied from Python 2.7 / 3.5 dash_R_cleanup
 if _py3:
