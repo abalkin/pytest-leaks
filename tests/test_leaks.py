@@ -70,6 +70,7 @@ def test_leaks_ini_setting(testdir):
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
 
+
 @pytest.mark.parametrize('run,stab', [
     (2, 2),
     (3, 1),
@@ -82,6 +83,7 @@ def test_leaks_option_parsing(testdir, run, stab):
     """ % (run, stab))
     result = testdir.runpytest('-R', '%d:%d' % (run, stab))
     assert result.ret == 0
+
 
 @with_pydebug
 def test_leaks_checker(testdir):

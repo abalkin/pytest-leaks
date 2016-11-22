@@ -61,7 +61,7 @@ Features
 --------
 
 * Detects memory leaks by running py.test tests repeatedly and comparing total reference
-counts between the runs.
+  counts between the runs.
 
 
 Requirements
@@ -78,11 +78,6 @@ You can install "pytest-leaks" via `pip`_ from `PyPI`_::
 
     $ pip install pytest-leaks
 
-
-Usage
------
-
-* TODO
 
 Contributing
 ------------
@@ -109,9 +104,6 @@ This `Pytest`_ plugin was initially generated with `Cookiecutter`_ along with `@
 .. _`Cookiecutter`: https://github.com/audreyr/cookiecutter
 .. _`@hackebrot`: https://github.com/hackebrot
 .. _`MIT`: http://opensource.org/licenses/MIT
-.. _`BSD-3`: http://opensource.org/licenses/BSD-3-Clause
-.. _`GNU GPL v3.0`: http://www.gnu.org/licenses/gpl-3.0.txt
-.. _`Apache Software License 2.0`: http://www.apache.org/licenses/LICENSE-2.0
 .. _`cookiecutter-pytest-plugin`: https://github.com/pytest-dev/cookiecutter-pytest-plugin
 .. _`file an issue`: https://github.com/abalkin/pytest-leaks/issues
 .. _`pytest`: https://github.com/pytest-dev/pytest
