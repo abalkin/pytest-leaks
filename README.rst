@@ -9,7 +9,7 @@ pytest-leaks - A pytest plugin to trace resource leaks
     :target: https://travis-ci.org/abalkin/pytest-leaks
     :alt: See Build Status on Travis CI
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/abalkin/pytest-leaks?branch=master
+.. image:: https://ci.appveyor.com/api/projects/status/github/abalkin/pytest-leaks?branch=master&svg=true
     :target: https://ci.appveyor.com/project/abalkin/pytest-leaks/branch/master
     :alt: See Build Status on AppVeyor
 
