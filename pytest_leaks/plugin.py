@@ -5,6 +5,8 @@ A pytest plugin to trace resource leaks
 from __future__ import print_function
 
 import sys
+import re
+
 from collections import OrderedDict
 
 import pytest
@@ -34,11 +36,10 @@ def pytest_addoption(parser):
         help='''\
 runs each test several times and examines sys.gettotalrefcount() to
 see if the test appears to be leaking references.  The argument should
-be of the form stab:run:fname where 'stab' is the number of times the
+be of the form stab:run where 'stab' is the number of times the
 test is run to let gettotalrefcount settle down, 'run' is the number
-of times further it is run and 'fname' is the name of the file the
-reports are written to.  These parameters all have defaults (5, 4 and
-"reflog.txt" respectively), and the minimal invocation is '-R :'.
+of times further it is run.  These parameters all have defaults (5 and 4,
+respectively), and the minimal invocation is '-R :'.
 '''
     )
 
@@ -68,20 +69,28 @@ def leaks_checker(request):
 
 class LeakChecker(object):
     def __init__(self, config):
-        self.stab = config.getini('leaks_stab')
-        self.run = config.getini('leaks_run')
-        leaks_option_parts = config.getvalue("leaks").split(':')
-        if len(leaks_option_parts) > 1:
-            try:
-                self.stab = int(leaks_option_parts[0])
-            except ValueError:
-                pass
-            try:
-                self.run = int(leaks_option_parts[1])
-            except ValueError:
-                pass
-        # TODO: warn about invalid -R values.
-        # pytest.set_trace()
+        try:
+            self.stab = int(config.getini('leaks_stab'))
+        except ValueError:
+            raise pytest.UsageError("pytest-leaks: invalid value for "
+                                    "'leaks_stab' in ini file")
+
+        try:
+            self.run = int(config.getini('leaks_run'))
+        except ValueError:
+            raise pytest.UsageError("pytest-leaks: invalid value for "
+                                    "'leaks_run' in ini file")
+
+        m = re.match(r'^(\d*):(\d*)$', str(config.getvalue("leaks")))
+        if m:
+            if m.group(1):
+                self.stab = int(m.group(1))
+            if m.group(2):
+                self.run = int(m.group(2))
+        else:
+            raise pytest.UsageError("pytest-leaks: invalid value for "
+                                    "-R option")
+
         # Get access to the builtin "runner" plugin.
         self.runner = config.pluginmanager.get_plugin('runner')
         self.leaks = {}  # nodeid -> leaks
