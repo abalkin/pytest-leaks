@@ -1,17 +1,24 @@
 # Config file for automatic testing at travis-ci.org
 
-sudo: false
-language: python
-python:
-  - "3.5"
+language: generic
+
+addons:
+  apt:
+    packages:
+      - python2.7-dbg
+      - python3.5-dbg
 
 install:
+  - virtualenv --python=python3.5-dbg env
+  - source env/bin/activate
   - pip install tox
-  - "TOX_ENV=${TRAVIS_PYTHON_VERSION/[0-9].[0-9]/py${TRAVIS_PYTHON_VERSION/.}}"
-script: tox -e $TOX_ENV
+
+script:
+  - tox
 
 before_cache:
   - rm -rf $HOME/.cache/pip/log
+
 cache:
   directories:
     - $HOME/.cache/pip
