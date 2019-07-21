@@ -40,6 +40,10 @@ reports are written to.  These parameters all have defaults (5, 4 and
 def pytest_configure(config):
     leaks = config.getvalue("leaks")
     if leaks:
+        if not hasattr(sys, 'gettotalrefcount') or True:
+            raise pytest.UsageError("pytest-leaks: tracking reference leaks requires "
+                                    "running on a debug build of Python")
+
         checker = LeakChecker(config)
         config.pluginmanager.register(checker, 'leaks_checker')
 
