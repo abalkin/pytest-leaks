@@ -13,7 +13,7 @@ import pytest
 if sys.version_info < (3,):
     from . import refleak_27 as refleak
     refleak_ver = '27'
-elif sys.version_info < (3, 6):
+elif sys.version_info < (3, 7):
     from . import refleak_35 as refleak
     refleak_ver = '35'
 else:
