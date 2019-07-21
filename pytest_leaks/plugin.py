@@ -10,7 +10,12 @@ from collections import OrderedDict
 import pytest
 
 
-from . import refleak_38 as refleak
+if sys.version_info < (3,):
+    from . import refleak_27 as refleak
+    refleak_27 = True
+else:
+    from . import refleak_38 as refleak
+    refleak_27 = False
 
 
 class Leaks(OrderedDict):
@@ -133,7 +138,11 @@ class Namespace(object):
 
 
 def hunt_leaks(func, nwarmup, ntracked):
-    ns = Namespace()
-    ns.quiet = True
-    ns.huntrleaks = (nwarmup, ntracked, "")
-    return refleak.dash_R(ns, "", func)
+    huntrleaks = (nwarmup, ntracked, "")
+    if refleak_27:
+        return refleak.dash_R(None, "", func, huntrleaks, True)
+    else:
+        ns = Namespace()
+        ns.quiet = True
+        ns.huntrleaks = huntrleaks
+        return refleak.dash_R(ns, "", func)

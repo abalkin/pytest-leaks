@@ -19,7 +19,8 @@ import traceback
 import unittest
 import warnings
 
-from test import support
+from . import support  # <- pytest-leaks edit
+from collections import OrderedDict  # <- pytest-leaks edit
 
 
 def dash_R(the_module, test, indirect_test, huntrleaks, quiet):
@@ -130,19 +131,24 @@ def dash_R(the_module, test, indirect_test, huntrleaks, quiet):
         return any(deltas)
 
     failed = False
+    leaks = OrderedDict()  # <- pytest-leaks edit
     for deltas, item_name, checker in [
         (rc_deltas, 'references', check_rc_deltas),
         (fd_deltas, 'file descriptors', check_fd_deltas)
     ]:
         deltas = deltas[nwarmup:]
         if checker(deltas):
+            # <pytest-leaks edit>
+            leaks[item_name] = deltas
+            continue
+            # </pytest-leaks edit>
             msg = '%s leaked %s %s, sum=%s' % (test, deltas, item_name, sum(deltas))
             print >> sys.stderr, msg
             with open(fname, "a") as refrep:
                 print >> refrep, msg
                 refrep.flush()
             failed = True
-    return failed
+    return leaks  # <- pytest-leaks edit
 
 def dash_R_cleanup(fs, ps, pic, zdc, abcs):
     import gc, copy_reg
