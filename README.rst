@@ -67,8 +67,11 @@ Features
 Requirements
 ------------
 
-* py.test version >= TBD;
-* A debug build of Python 3.5.
+* py.test version >= 3;
+* A debug build of Python (2.7 or >=3.5).
+
+On Linux, Python debug builds can be found in packages ``pythonX.Y-dbg`` (Debian and derivatives)
+and ``python3-debug`` (Fedora and derivatives).
 
 
 Installation
@@ -87,7 +90,7 @@ the coverage at least stays the same before you submit a pull request.
 License
 -------
 
-Distributed under the terms of the `MIT`_ license, "pytest-leaks" is free and open source software.
+Distributed under the terms of the `MIT`_ and `PSF`_ licenses, "pytest-leaks" is free and open source software.
 
 
 Issues
@@ -104,6 +107,7 @@ This `Pytest`_ plugin was initially generated with `Cookiecutter`_ along with `@
 .. _`Cookiecutter`: https://github.com/audreyr/cookiecutter
 .. _`@hackebrot`: https://github.com/hackebrot
 .. _`MIT`: http://opensource.org/licenses/MIT
+.. _`PSF`: https://docs.python.org/3/license.html
 .. _`cookiecutter-pytest-plugin`: https://github.com/pytest-dev/cookiecutter-pytest-plugin
 .. _`file an issue`: https://github.com/abalkin/pytest-leaks/issues
 .. _`pytest`: https://github.com/pytest-dev/pytest
