@@ -12,8 +12,6 @@ from inspect import isabstract
 
 import pytest
 
-_py3 = sys.version_info[0] >= 3
-
 
 def pytest_addoption(parser):
     group = parser.getgroup('leaks')
@@ -171,87 +169,82 @@ def hunt_leaks(func, nwarmup, ntracked):
 
 
 # The following code is mostly copied from Python 2.7 / 3.5 dash_R_cleanup
-if _py3:
-    def cleanup(warning_filters, copyreg_dispatch_table, path_importer_cache,
-                zip_directory_cache, abcs):
-        import copyreg
-        import re
-        import warnings
-        import _strptime
-        import linecache
-        import urllib.parse
-        import urllib.request
-        import mimetypes
-        import doctest
-        import struct
-        import filecmp
-        import collections.abc
-        from distutils.dir_util import _path_created
-        from weakref import WeakSet
+def cleanup(warning_filters, copyreg_dispatch_table, path_importer_cache,
+            zip_directory_cache, abcs):
+    import copyreg
+    import re
+    import warnings
+    import _strptime
+    import linecache
+    import urllib.parse
+    import urllib.request
+    import mimetypes
+    import doctest
+    import struct
+    import filecmp
+    import collections.abc
+    from distutils.dir_util import _path_created
+    from weakref import WeakSet
 
-        # Clear the warnings registry, so they can be displayed again
-        for mod in sys.modules.values():
-            if hasattr(mod, '__warningregistry__'):
-                del mod.__warningregistry__
+    # Clear the warnings registry, so they can be displayed again
+    for mod in sys.modules.values():
+        if hasattr(mod, '__warningregistry__'):
+            del mod.__warningregistry__
 
-        # Restore some original values.
-        warnings.filters[:] = warning_filters
-        copyreg.dispatch_table.clear()
-        copyreg.dispatch_table.update(copyreg_dispatch_table)
-        sys.path_importer_cache.clear()
-        sys.path_importer_cache.update(path_importer_cache)
-        try:
-            import zipimport
-        except ImportError:
-            pass  # Run unmodified on platforms without zipimport support
-        else:
-            zipimport._zip_directory_cache.clear()
-            zipimport._zip_directory_cache.update(zip_directory_cache)
+    # Restore some original values.
+    warnings.filters[:] = warning_filters
+    copyreg.dispatch_table.clear()
+    copyreg.dispatch_table.update(copyreg_dispatch_table)
+    sys.path_importer_cache.clear()
+    sys.path_importer_cache.update(path_importer_cache)
+    try:
+        import zipimport
+    except ImportError:
+        pass  # Run unmodified on platforms without zipimport support
+    else:
+        zipimport._zip_directory_cache.clear()
+        zipimport._zip_directory_cache.update(zip_directory_cache)
 
-        # clear type cache
-        sys._clear_type_cache()
+    # clear type cache
+    sys._clear_type_cache()
 
-        # Clear ABC registries, restoring previously saved ABC registries.
-        for a in collections.abc.__all__:
-            abc = getattr(collections.abc, a)
-            if not isabstract(abc):
-                continue
-            for obj in abc.__subclasses__() + [abc]:
-                obj._abc_registry = abcs.get(obj, WeakSet()).copy()
-                obj._abc_cache.clear()
-                obj._abc_negative_cache.clear()
+    # Clear ABC registries, restoring previously saved ABC registries.
+    for a in collections.abc.__all__:
+        abc = getattr(collections.abc, a)
+        if not isabstract(abc):
+            continue
+        for obj in abc.__subclasses__() + [abc]:
+            obj._abc_registry = abcs.get(obj, WeakSet()).copy()
+            obj._abc_cache.clear()
+            obj._abc_negative_cache.clear()
 
-        # Flush standard output, so that buffered data is sent to the OS and
-        # associated Python objects are reclaimed.
-        for stream in (sys.stdout, sys.stderr, sys.__stdout__, sys.__stderr__):
-            if stream is not None:
-                stream.flush()
+    # Flush standard output, so that buffered data is sent to the OS and
+    # associated Python objects are reclaimed.
+    for stream in (sys.stdout, sys.stderr, sys.__stdout__, sys.__stderr__):
+        if stream is not None:
+            stream.flush()
 
-        # Clear assorted module caches.
-        _path_created.clear()
-        re.purge()
-        _strptime._regex_cache.clear()
-        urllib.parse.clear_cache()
-        urllib.request.urlcleanup()
-        linecache.clearcache()
-        mimetypes._default_mime_types()
-        filecmp._cache.clear()
-        struct._clearcache()
-        doctest.master = None
-        try:
-            import ctypes
-        except ImportError:
-            # Don't worry about resetting the cache if ctypes is not supported
-            pass
-        else:
-            ctypes._reset_cache()
-
-        # Collect cyclic trash and read memory statistics immediately after.
-        func1 = sys.getallocatedblocks
-        func2 = sys.gettotalrefcount
-        gc.collect()
-        return func1(), func2()
-else:
-    def cleanup(warning_filters, copyreg_dispatch_table, path_importer_cache,
-                zip_directory_cache, abcs):
+    # Clear assorted module caches.
+    _path_created.clear()
+    re.purge()
+    _strptime._regex_cache.clear()
+    urllib.parse.clear_cache()
+    urllib.request.urlcleanup()
+    linecache.clearcache()
+    mimetypes._default_mime_types()
+    filecmp._cache.clear()
+    struct._clearcache()
+    doctest.master = None
+    try:
+        import ctypes
+    except ImportError:
+        # Don't worry about resetting the cache if ctypes is not supported
         pass
+    else:
+        ctypes._reset_cache()
+
+    # Collect cyclic trash and read memory statistics immediately after.
+    func1 = sys.getallocatedblocks
+    func2 = sys.gettotalrefcount
+    gc.collect()
+    return func1(), func2()
