@@ -84,8 +84,14 @@ class LeakChecker(object):
             hook.pytest_runtest_call(item=item)
             hook.pytest_runtest_teardown(item=item, nextitem=nextitem)
 
-        call = self.runner.CallInfo(lambda: self.hunt_leaks(run_test),
-                                    'leakshunt')
+        if hasattr(self.runner.CallInfo, 'from_call'):
+            # pytest >= 4
+            call = self.runner.CallInfo.from_call(
+                lambda: self.hunt_leaks(run_test), 'leakshunt')
+        else:
+            # pytest < 4
+            call = self.runner.CallInfo(
+                lambda: self.hunt_leaks(run_test), 'leakshunt')
         if call.excinfo is None and call.result:
             self.leaks[item.nodeid] = call.result
         yield
