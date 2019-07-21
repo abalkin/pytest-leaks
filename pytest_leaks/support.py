@@ -49,7 +49,8 @@ def fd_count():
             for report_type in (msvcrt.CRT_WARN,
                                 msvcrt.CRT_ERROR,
                                 msvcrt.CRT_ASSERT):
-                old_modes[report_type] = msvcrt.CrtSetReportMode(report_type, 0)
+                old_modes[report_type] = msvcrt.CrtSetReportMode(
+                    report_type, 0)
 
     try:
         count = 0

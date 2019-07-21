@@ -50,8 +50,9 @@ def pytest_configure(config):
     leaks = config.getvalue("leaks")
     if leaks:
         if not hasattr(sys, 'gettotalrefcount'):
-            raise pytest.UsageError("pytest-leaks: tracking reference leaks requires "
-                                    "running on a debug build of Python")
+            raise pytest.UsageError(
+                "pytest-leaks: tracking reference leaks requires "
+                "running on a debug build of Python")
 
         checker = LeakChecker(config)
         config.pluginmanager.register(checker, 'leaks_checker')
@@ -103,11 +104,13 @@ class LeakChecker(object):
                 lambda: self.hunt_leaks(run_test), 'leakshunt')
 
         if call.excinfo is not None:
-            item.ihook.pytest_runtest_logstart(nodeid=item.nodeid, location=item.location)
+            item.ihook.pytest_runtest_logstart(nodeid=item.nodeid,
+                                               location=item.location)
             hook = item.ihook
             report = hook.pytest_runtest_makereport(item=item, call=call)
             hook.pytest_runtest_logreport(report=report)
-            hook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
+            hook.pytest_runtest_logfinish(nodeid=item.nodeid,
+                                          location=item.location)
             return True  # skip pytest implementation
         else:
             self.leaks[item.nodeid] = call.result
