@@ -22,7 +22,7 @@ setup(
     url='https://github.com/abalkin/pytest-leaks',
     description='A pytest plugin to trace resource leaks.',
     long_description=read('README.rst'),
-    py_modules=['pytest_leaks'],
+    packages=['pytest_leaks'],
     install_requires=['pytest>=2.9.2'],
     classifiers=[
         'Development Status :: 1 - Planning',
@@ -38,7 +38,7 @@ setup(
     ],
     entry_points={
         'pytest11': [
-            'leaks = pytest_leaks',
+            'leaks = pytest_leaks.plugin',
         ],
     },
 )
