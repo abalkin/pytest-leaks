@@ -20,7 +20,7 @@ Usage
 
 To add a leaks test to your py.test session, add the ``-R`` option on the command line::
 
-    $ py.test -v -R : test_fauset.py
+    $ cd examples; pytest-3 -v -R : test_faucet.py
     ============================= test session starts =============================
     platform darwin -- Python 3.5.2+, pytest-3.0.5.dev0, py-1.4.31, pluggy-0.4.0 --
     cachedir: .cache
@@ -28,33 +28,33 @@ To add a leaks test to your py.test session, add the ``-R`` option on the comman
     plugins: leaks-0.2.0, cov-2.4.0, pyq-1.1
     collected 3 items
 
-    test_fauset.py::test_leaky_fauset LEAKED
-    test_fauset.py::test_broken_fauset FAILED
-    test_fauset.py::test_mended_fauset PASSED
+    test_faucet.py::test_leaky_faucet LEAKED
+    test_faucet.py::test_broken_faucet FAILED
+    test_faucet.py::test_mended_faucet PASSED
 
     ================================ leaks summary ================================
-    test_fauset.py::test_leaky_fauset: Leaks([('refs', [2, 2, 2, 2])])
+    test_faucet.py::test_leaky_faucet: Leaks([('refs', [2, 2, 2, 2])])
     ================================== FAILURES ===================================
-    _____________________________ test_broken_fauset ______________________________
+    _____________________________ test_broken_faucet ______________________________
 
-        def test_broken_fauset():
+        def test_broken_faucet():
     >       assert 0
     E       assert 0
 
-    test_fauset.py:6: AssertionError
+    test_faucet.py:6: AssertionError
     ================ 1 failed, 1 passed, 1 leaked in 0.46 seconds =================
 
 The test file used above contains the following code::
 
-    $ cat test_fauset.py
+    $ cat test_faucet.py
     drops = []
-    def test_leaky_fauset():
+    def test_leaky_faucet():
         drops.append({})
 
-    def test_broken_fauset():
+    def test_broken_faucet():
         assert 0
 
-    def test_mended_fauset():
+    def test_mended_faucet():
         assert 1
 
 Features
