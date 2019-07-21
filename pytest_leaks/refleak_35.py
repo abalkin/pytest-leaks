@@ -1,3 +1,4 @@
+# Modified from cpython-3.5/Lib/test/regrtest.py
 import importlib
 
 import argparse
@@ -33,7 +34,8 @@ try:
 except ImportError:
     multiprocessing = None
 
-from test import support
+from . import support  # <- pytest-leaks edit
+from collections import OrderedDict  # <- pytest-leaks edit
 
 
 def dash_R(the_module, test, indirect_test, huntrleaks):
@@ -73,19 +75,19 @@ def dash_R(the_module, test, indirect_test, huntrleaks):
     rc_deltas = [0] * repcount
     alloc_deltas = [0] * repcount
 
-    print("beginning", repcount, "repetitions", file=sys.stderr)
-    print(("1234567890"*(repcount//10 + 1))[:repcount], file=sys.stderr)
+    #print("beginning", repcount, "repetitions", file=sys.stderr)  # <- pytest-leaks edit
+    #print(("1234567890"*(repcount//10 + 1))[:repcount], file=sys.stderr)  # <- pytest-leaks edit
     sys.stderr.flush()
     for i in range(repcount):
         indirect_test()
         alloc_after, rc_after = dash_R_cleanup(fs, ps, pic, zdc, abcs)
-        sys.stderr.write('.')
-        sys.stderr.flush()
+        #sys.stderr.write('.')  # <- pytest-leaks edit
+        #sys.stderr.flush()  # <- pytest-leaks edit
         if i >= nwarmup:
             rc_deltas[i] = rc_after - rc_before
             alloc_deltas[i] = alloc_after - alloc_before
         alloc_before, rc_before = alloc_after, rc_after
-    print(file=sys.stderr)
+    #print(file=sys.stderr)  # <- pytest-leaks edit
 
     # These checkers return False on success, True on failure
     def check_rc_deltas(deltas):
@@ -104,6 +106,7 @@ def dash_R(the_module, test, indirect_test, huntrleaks):
         return all(delta >= 1 for delta in deltas)
 
     failed = False
+    leaks = OrderedDict()  # <- pytest-leaks edit
     for deltas, item_name, checker in [
         (rc_deltas, 'references', check_rc_deltas),
         (alloc_deltas, 'memory blocks', check_rc_deltas)
@@ -111,6 +114,10 @@ def dash_R(the_module, test, indirect_test, huntrleaks):
         # ignore warmup runs
         deltas = deltas[nwarmup:]
         if checker(deltas):
+            # <pytest-leaks edit>
+            leaks[item_name] = deltas
+            continue
+            # </pytest-leaks edit>
             msg = '%s leaked %s %s, sum=%s' % (
                 test, deltas, item_name, sum(deltas))
             print(msg, file=sys.stderr)
@@ -119,7 +126,7 @@ def dash_R(the_module, test, indirect_test, huntrleaks):
                 print(msg, file=refrep)
                 refrep.flush()
             failed = True
-    return failed
+    return leaks  # <- pytest-leaks edit
 
 def dash_R_cleanup(fs, ps, pic, zdc, abcs):
     import gc, copyreg
