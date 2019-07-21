@@ -1,9 +1,11 @@
+# Modified from cpython/Lib/test/libregrtest/refleak.py
 import os
 import re
 import sys
 import warnings
 from inspect import isabstract
-from test import support
+from . import support  # <- pytest-leaks edit
+from collections import OrderedDict  # <- pytest-leaks edit
 try:
     from _abc import _get_dump
 except ImportError:
@@ -127,6 +129,7 @@ def dash_R(ns, test_name, test_func):
         return any(deltas)
 
     failed = False
+    leaks = OrderedDict()  # <- pytest-leaks edit
     for deltas, item_name, checker in [
         (rc_deltas, 'references', check_rc_deltas),
         (alloc_deltas, 'memory blocks', check_rc_deltas),
@@ -135,6 +138,10 @@ def dash_R(ns, test_name, test_func):
         # ignore warmup runs
         deltas = deltas[nwarmup:]
         if checker(deltas):
+            # <pytest-leaks edit>
+            leaks[item_name] = deltas
+            continue
+            # </pytest-leaks edit>
             msg = '%s leaked %s %s, sum=%s' % (
                 test_name, deltas, item_name, sum(deltas))
             print(msg, file=sys.stderr, flush=True)
@@ -142,7 +149,7 @@ def dash_R(ns, test_name, test_func):
                 print(msg, file=refrep)
                 refrep.flush()
             failed = True
-    return failed
+    return leaks  # <- pytest-leaks edit
 
 
 def dash_R_cleanup(fs, ps, pic, zdc, abcs):
