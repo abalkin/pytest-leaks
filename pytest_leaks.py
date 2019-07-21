@@ -76,7 +76,7 @@ class LeakChecker(object):
     def hunt_leaks(self, func):
         return hunt_leaks(func, self.stab, self.run)
 
-    @pytest.hookimpl(hookwrapper=True)
+    @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_protocol(self, item, nextitem):
         def run_test():
             hook = item.ihook
@@ -92,9 +92,18 @@ class LeakChecker(object):
             # pytest < 4
             call = self.runner.CallInfo(
                 lambda: self.hunt_leaks(run_test), 'leakshunt')
-        if call.excinfo is None and call.result:
+
+        if call.excinfo is not None:
+            item.ihook.pytest_runtest_logstart(nodeid=item.nodeid, location=item.location)
+            hook = item.ihook
+            report = hook.pytest_runtest_makereport(item=item, call=call)
+            hook.pytest_runtest_logreport(report=report)
+            hook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
+            return True  # skip pytest implementation
+        else:
             self.leaks[item.nodeid] = call.result
-        yield
+
+        return  # proceed to pytest implementation
 
     @pytest.hookimpl(hookwrapper=True, trylast=True)
     def pytest_report_teststatus(self, report):
