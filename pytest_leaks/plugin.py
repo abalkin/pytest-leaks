@@ -109,7 +109,8 @@ class LeakChecker(object):
         if hasattr(self.runner.CallInfo, 'from_call'):
             # pytest >= 4
             call = self.runner.CallInfo.from_call(
-                lambda: self.hunt_leaks(run_test), 'leakshunt')
+                lambda: self.hunt_leaks(run_test), 'leakshunt',
+                reraise=(KeyboardInterrupt,))
         else:
             # pytest < 4
             call = self.runner.CallInfo(
