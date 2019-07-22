@@ -142,7 +142,16 @@ class LeakChecker(object):
     @pytest.hookimpl
     def pytest_terminal_summary(self, terminalreporter, exitstatus):
         tr = terminalreporter
-        leaked = tr.getreports('leaked')
+
+        leaked = list(tr.getreports('leaked'))
+
+        if 'pytest_sugar' in type(tr).__module__:
+            # pytest-sugar doesn't run pytest_report_teststatus: ensure
+            # leak summary gets shown
+            for rep in tr.getreports('passed'):
+                if self.leaks.get(rep.nodeid) and rep.when == "call":
+                    leaked.append(rep)
+
         if leaked:
             tr.write_sep("=", 'leaks summary', cyan=True)
             for rep in leaked:
