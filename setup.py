@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='pytest-leaks',
-    version='0.3.dev',
+    version='0.3.0',
     author='Alexander Belopolsky',
     author_email='alexander.belopolsky@gmail.com',
     maintainer='Alexander Belopolsky',
