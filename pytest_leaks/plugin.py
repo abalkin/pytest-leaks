@@ -24,7 +24,10 @@ else:
 
 
 class Leaks(OrderedDict):
-    pass
+    def __str__(self):
+        msg = ", ".join("{!s}: {!r}".format(key, value)
+                        for key, value in self.items())
+        return "leaked {}".format(msg)
 
 
 def pytest_addoption(parser):
@@ -155,7 +158,7 @@ class LeakChecker(object):
         if leaked:
             tr.write_sep("=", 'leaks summary', cyan=True)
             for rep in leaked:
-                tr.line("%s: %r" % (rep.nodeid, Leaks(self.leaks[rep.nodeid])))
+                tr.line("%s: %s" % (rep.nodeid, Leaks(self.leaks[rep.nodeid])))
 
 
 class Namespace(object):
