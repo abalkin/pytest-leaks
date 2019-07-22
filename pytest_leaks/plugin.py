@@ -12,6 +12,12 @@ from collections import OrderedDict
 import pytest
 
 
+try:
+    from _pytest.doctest import DoctestItem
+except ImportError:
+    DoctestItem = type(None)
+
+
 if sys.version_info < (3,):
     from . import refleak_27 as refleak
     refleak_ver = '27'
@@ -103,26 +109,45 @@ class LeakChecker(object):
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_protocol(self, item, nextitem):
+        when = ["setup"]
+        hook = item.ihook
+
+        if isinstance(item, DoctestItem):
+            # pytest runs doctests with clear_globs=True, so we need
+            # to copy it in order to be able to run several times
+            doctest_original_globs = dict(item.dtest.globs)
+        else:
+            doctest_original_globs = None
+
         def run_test():
-            hook = item.ihook
+            when[0] = "setup"
             hook.pytest_runtest_setup(item=item)
+            when[0] = "call"
             hook.pytest_runtest_call(item=item)
+            when[0] = "teardown"
             hook.pytest_runtest_teardown(item=item, nextitem=nextitem)
+            if doctest_original_globs is not None:
+                item.dtest.globs.update(doctest_original_globs)
 
         if hasattr(self.runner.CallInfo, 'from_call'):
             # pytest >= 4
+            from _pytest.outcomes import Exit
             call = self.runner.CallInfo.from_call(
                 lambda: self.hunt_leaks(run_test), 'leakshunt',
-                reraise=(KeyboardInterrupt,))
+                reraise=(KeyboardInterrupt, Exit))
         else:
             # pytest < 4
             call = self.runner.CallInfo(
                 lambda: self.hunt_leaks(run_test), 'leakshunt')
 
         if call.excinfo is not None:
-            item.ihook.pytest_runtest_logstart(nodeid=item.nodeid,
-                                               location=item.location)
-            hook = item.ihook
+            # Raise errors immediately: it's possible there's some bad
+            # interaction with the leak checking code, so we should
+            # not hide this failure.
+            hook.pytest_runtest_logstart(nodeid=item.nodeid,
+                                         location=item.location)
+            # doctest requires errors are reported with the correct 'when'
+            call.when = when[0]
             report = hook.pytest_runtest_makereport(item=item, call=call)
             hook.pytest_runtest_logreport(report=report)
             hook.pytest_runtest_logfinish(nodeid=item.nodeid,

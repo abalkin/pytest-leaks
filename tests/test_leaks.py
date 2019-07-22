@@ -122,3 +122,58 @@ def test_hunt_leaks(leaks_checker):
     leaks = leaks_checker.hunt_leaks(leaking)
     assert leaks
     assert leaks['refs'] == [1]
+
+
+def test_doctest(testdir):
+    test_code = """
+    items = []
+
+    class SomeClass(object):
+        '''
+        >>> items.append(SomeClass())
+        '''
+    """
+
+    testdir.makepyfile(test_code)
+
+    # run pytest with the following cmd args
+    result = testdir.runpytest(
+        '-R', ':',
+        '--doctest-modules',
+        '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        '*::test_doctest.SomeClass LEAKED*',
+    ])
+
+    assert result.ret == 0
+
+
+def test_doctest_failure(testdir):
+    test_code = """
+    def foo():
+        '''
+        >>> False
+        True
+        '''
+    """
+
+    testdir.makepyfile(test_code)
+
+    # run pytest with the following cmd args
+    result = testdir.runpytest(
+        '-R', ':',
+        '--doctest-modules',
+        '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        '*::test_doctest_failure.foo FAILED*',
+        "Expected:",
+        "    True",
+        "Got:",
+        "    False"
+    ])
+
+    assert result.ret == 1
