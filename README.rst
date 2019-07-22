@@ -57,6 +57,11 @@ The test file used above contains the following code::
     def test_mended_faucet():
         assert 1
 
+Note that pytest-leaks run tests several times: if you see test
+failures that are present only when using pytest-leaks, check that the
+test does not modify any global state in a way that prevents it from
+running a second time.
+
 Features
 --------
 
