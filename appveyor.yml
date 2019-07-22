@@ -1,6 +1,3 @@
-# What Python version is installed where:
-# http://www.appveyor.com/docs/installed-software#python
-
 environment:
   matrix:
     - PYTHON_VERSION: "v3.7.4"
@@ -15,8 +12,9 @@ install:
   - ps: |
       $ErrorActionPreference = "Stop"
       $pydir = "$env:LOCALAPPDATA\cpython"
-      if (-NOT (Test-Path $pydir)) {
-        & cmd /c "git clone --depth 1 https://github.com/python/cpython.git $pydir -b $env:PYTHON_VERSION 2>&1"
+      if (-NOT ((Test-Path "$pydir\PCbuild\win32") -AND (Test-Path "$pydir\Lib"))) {
+        if (Test-Path $pydir) { Remove-Item -Recurse -Path $pydir }
+        & cmd /c "git clone -q --depth 1 https://github.com/python/cpython.git $pydir -b $env:PYTHON_VERSION 2>&1"
         cd $env:LOCALAPPDATA\cpython
         & cmd /c PCbuild\build.bat -d
         cd $env:APPVEYOR_BUILD_FOLDER
