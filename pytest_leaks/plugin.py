@@ -120,12 +120,22 @@ class LeakChecker(object):
             doctest_original_globs = None
 
         def run_test():
+            hasrequest = hasattr(item, "_request")
+            if hasrequest and not item._request:
+                item._initrequest()
+
             when[0] = "setup"
             hook.pytest_runtest_setup(item=item)
             when[0] = "call"
             hook.pytest_runtest_call(item=item)
             when[0] = "teardown"
             hook.pytest_runtest_teardown(item=item, nextitem=nextitem)
+
+            if hasrequest:
+                # Ensure fixtures etc are reset properly
+                item._request = False
+                item.funcargs = None
+
             if doctest_original_globs is not None:
                 item.dtest.globs.update(doctest_original_globs)
 

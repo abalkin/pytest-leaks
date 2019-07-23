@@ -200,3 +200,39 @@ def test_doctest_pass(tmpdir):
         cwd=str(tmpdir))
 
     assert re.search(b"test_doctest\\.SomeClass\\s*PASSED", output), output
+
+
+def test_fixture_setup_teardown(tmpdir):
+    # XXX: This test fails if run with the `testdir` fixture,
+    # XXX: for some currently unknown reason (gh-12)
+    with open(str(tmpdir / "test_sth.py"), "w") as f:
+        f.write(textwrap.dedent("""
+        import pytest
+
+        global_state = False
+        global_count = 0
+        prev_global_count = -1
+
+        @pytest.fixture
+        def myfixture():
+            global global_state, global_count
+            global_state = True
+            try:
+                yield
+            finally:
+                global_state = False
+                global_count += 1
+
+        def test_sth(myfixture):
+            global prev_global_count
+            assert global_state
+            assert global_count > prev_global_count
+            prev_global_count = global_count
+        """))
+
+    output = subprocess.check_output(
+        [sys.executable, '-mpytest', '-R', ':',
+         '--doctest-modules', '-v', 'test_sth.py'],
+        cwd=str(tmpdir))
+
+    assert re.search(b"::test_sth\\s*PASSED", output), output
