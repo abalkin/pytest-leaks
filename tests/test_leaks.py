@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 import sys
-import re
-import textwrap
-import subprocess
 
 import pytest
 
@@ -182,21 +179,58 @@ def test_doctest_failure(testdir):
     assert result.ret == 1
 
 
-def test_doctest_pass(tmpdir):
-    # XXX: This test fails if run with the `testdir` fixture,
-    # XXX: for some currently unknown reason (gh-12)
-    with open(str(tmpdir / "test_doctest.py"), "w") as f:
-        f.write(textwrap.dedent("""
-        class SomeClass(object):
-            '''
-            >>> SomeClass()
-            <...
-            '''
-        """))
+def test_doctest_pass(testdir):
+    test_code = """
+    class SomeClass(object):
+        '''
+        >>> SomeClass()
+        <...
+        '''
+    """
 
-    output = subprocess.check_output(
-        [sys.executable, '-mpytest', '-R', ':',
-         '--doctest-modules', '-v', 'test_doctest.py'],
-        cwd=str(tmpdir))
+    testdir.makepyfile(test_code)
 
-    assert re.search(b"test_doctest\\.SomeClass\\s*PASSED", output), output
+    # XXX: fails without subprocess (gh-12)
+    result = testdir.runpytest_subprocess(
+        '-R', ':', '--doctest-modules', '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        "*::test_doctest_pass.SomeClass PASSED*"
+    ])
+
+
+def test_fixture_setup_teardown(testdir):
+    test_code = """
+    import pytest
+
+    global_state = False
+    global_count = 0
+    prev_global_count = -1
+
+    @pytest.fixture
+    def myfixture():
+        global global_state, global_count
+        global_state = True
+        try:
+            yield
+        finally:
+            global_state = False
+            global_count += 1
+
+    def test_sth(myfixture):
+        global prev_global_count
+        assert global_state
+        assert global_count > prev_global_count
+        prev_global_count = global_count
+    """
+
+    testdir.makepyfile(test_code)
+
+    result = testdir.runpytest_subprocess(
+        '-R', ':', '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        "*::test_sth PASSED*"
+    ])
