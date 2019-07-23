@@ -23,28 +23,28 @@ To add a leaks test to your py.test session, add the `-R` option on the
 command line:
 
     $ cd examples; pytest-3 -v -R : test_faucet.py
-    ============================= test session starts =============================
-    platform darwin -- Python 3.5.2+, pytest-3.0.5.dev0, py-1.4.31, pluggy-0.4.0 --
-    cachedir: .cache
-    rootdir: .../abalkin/pytest-leaks, inifile:
-    plugins: leaks-0.2.0, cov-2.4.0, pyq-1.1
+    =========================== test session starts ===========================
+    platform linux -- Python 3.7.4, pytest-5.0.1, py-1.8.0, pluggy-0.12.0 --
+    cachedir: .pytest_cache
+    rootdir: ..
+    plugins: leaks-0.3.0
     collected 3 items
-    
-    test_faucet.py::test_leaky_faucet LEAKED
-    test_faucet.py::test_broken_faucet FAILED
-    test_faucet.py::test_mended_faucet PASSED
-    
-    ================================ leaks summary ================================
-    test_faucet.py::test_leaky_faucet: Leaks([('refs', [2, 2, 2, 2])])
-    ================================== FAILURES ===================================
-    _____________________________ test_broken_faucet ______________________________
-    
+
+    test_faucet.py::test_leaky_faucet LEAKED                            [ 33%]
+    test_faucet.py::test_broken_faucet FAILED                           [ 66%]
+    test_faucet.py::test_mended_faucet PASSED                           [100%]
+
+    ================================ FAILURES =================================
+    ___________________________ test_broken_faucet ____________________________
+
         def test_broken_faucet():
     >       assert 0
     E       assert 0
     
     test_faucet.py:6: AssertionError
-    ================ 1 failed, 1 passed, 1 leaked in 0.46 seconds =================
+    ============================== leaks summary ==============================
+    examples/test_faucet.py::test_leaky_faucet: leaked references: [2, 2, 2, 2], memory blocks: [2, 2, 2, 2]
+    ============== 1 failed, 1 passed, 1 leaked in 0.32 seconds ===============
 
 The test file used above contains the following code:
 
@@ -59,7 +59,7 @@ The test file used above contains the following code:
     def test_mended_faucet():
         assert 1
 
-Note that pytest-leaks run tests several times: if you see test failures
+Note that pytest-leaks runs tests several times: if you see test failures
 that are present only when using pytest-leaks, check that the test does
 not modify any global state in a way that prevents it from running a
 second time.
