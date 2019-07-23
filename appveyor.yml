@@ -1,33 +1,31 @@
-# What Python version is installed where:
-# http://www.appveyor.com/docs/installed-software#python
-
 environment:
   matrix:
+    - PYTHON_VERSION: "v3.7.4"
 
-    - PYTHON: "C:\\Python35"
-      TOX_ENV: "py35"
-
-
-init:
-  - "%PYTHON%/python -V"
-  - "%PYTHON%/python -c \"import struct;print( 8 * struct.calcsize(\'P\'))\""
+cache:
+  - '%LOCALAPPDATA%\cpython\PCbuild\win32 -> appveyor.yml'
+  - '%LOCALAPPDATA%\cpython\Lib -> appveyor.yml'
+  - '%LOCALAPPDATA%\pip\Cache -> appveyor.yml'
 
 install:
-  - "%PYTHON%/Scripts/easy_install -U pip"
-  - "%PYTHON%/Scripts/pip install tox"
-  - "%PYTHON%/Scripts/pip install wheel"
+  # Build debug Python from sources
+  - ps: |
+      $ErrorActionPreference = "Stop"
+      $pydir = "$env:LOCALAPPDATA\cpython"
+      if (-NOT ((Test-Path "$pydir\PCbuild\win32") -AND (Test-Path "$pydir\Lib"))) {
+        if (Test-Path $pydir) { Remove-Item -Recurse -Path $pydir }
+        & cmd /c "git clone -q --depth 1 https://github.com/python/cpython.git $pydir -b $env:PYTHON_VERSION 2>&1"
+        cd $env:LOCALAPPDATA\cpython
+        & cmd /c PCbuild\build.bat -d
+        cd $env:APPVEYOR_BUILD_FOLDER
+      }
+  # Install packages
+  - SET PYTHON=%LOCALAPPDATA%\cpython\PCbuild\win32\python_d.exe
+  - "%PYTHON% -mensurepip --user"
+  - "%PYTHON% -mpip install --user pytest"
 
-build: false  # Not a C# project, build stuff at the test step instead.
+build: false
 
 test_script:
-  - "%PYTHON%/Scripts/tox -e %TOX_ENV%"
-
-after_test:
-  - "%PYTHON%/python setup.py bdist_wheel"
-  - ps: "ls dist"
-
-artifacts:
-  - path: dist\*
-
-#on_success:
-#  - TODO: upload the content of dist/*.whl to a public wheelhouse
+  - "%PYTHON% -mpip install --user ."
+  - "%PYTHON% -mpytest tests"

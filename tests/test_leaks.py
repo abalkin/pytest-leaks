@@ -3,13 +3,10 @@ import sys
 
 import pytest
 
-_py3 = sys.version_info > (3, 0)
-
-with_pydebug = pytest.mark.skipif(not hasattr(sys, 'gettotalrefcount'),
-                                  reason='--with-pydebug build is required')
+if not hasattr(sys, 'gettotalrefcount'):
+    pytest.fail('python debug build compiled with --with-pydebug is required')
 
 
-@with_pydebug
 def test_config_options_fixture(testdir):
     """Make sure that pytest accepts our fixture."""
 
@@ -28,7 +25,7 @@ def test_config_options_fixture(testdir):
 
     # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
-        '*::test_sth PASSED',
+        '*::test_sth PASSED*',
     ])
 
     # make sure that that we get a '0' exit code for the testsuite
@@ -64,7 +61,7 @@ def test_leaks_ini_setting(testdir):
 
     # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
-        '*::test_hello_world PASSED',
+        '*::test_hello_world PASSED*',
     ])
 
     # make sure that that we get a '0' exit code for the testsuite
@@ -85,7 +82,6 @@ def test_leaks_option_parsing(testdir, run, stab):
     assert result.ret == 0
 
 
-@with_pydebug
 def test_leaks_checker(testdir):
     # create a temporary pytest test module
     testdir.makepyfile(test_leaks_code)
@@ -98,7 +94,7 @@ def test_leaks_checker(testdir):
 
     # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
-        '*::test_refleaks LEAKED',
+        '*::test_refleaks LEAKED*',
     ])
 
     # make sure that that we get a '0' exit code for the testsuite
@@ -126,3 +122,58 @@ def test_hunt_leaks(leaks_checker):
     leaks = leaks_checker.hunt_leaks(leaking)
     assert leaks
     assert leaks['refs'] == [1]
+
+
+def test_doctest(testdir):
+    test_code = """
+    items = []
+
+    class SomeClass(object):
+        '''
+        >>> items.append(SomeClass())
+        '''
+    """
+
+    testdir.makepyfile(test_code)
+
+    # run pytest with the following cmd args
+    result = testdir.runpytest(
+        '-R', ':',
+        '--doctest-modules',
+        '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        '*::test_doctest.SomeClass LEAKED*',
+    ])
+
+    assert result.ret == 0
+
+
+def test_doctest_failure(testdir):
+    test_code = """
+    def foo():
+        '''
+        >>> False
+        True
+        '''
+    """
+
+    testdir.makepyfile(test_code)
+
+    # run pytest with the following cmd args
+    result = testdir.runpytest(
+        '-R', ':',
+        '--doctest-modules',
+        '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        '*::test_doctest_failure.foo FAILED*',
+        "Expected:",
+        "    True",
+        "Got:",
+        "    False"
+    ])
+
+    assert result.ret == 1
