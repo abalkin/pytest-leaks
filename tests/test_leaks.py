@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
+import re
+import textwrap
+import subprocess
 
 import pytest
 
@@ -177,3 +180,23 @@ def test_doctest_failure(testdir):
     ])
 
     assert result.ret == 1
+
+
+def test_doctest_pass(tmpdir):
+    # XXX: This test fails if run with the `testdir` fixture,
+    # XXX: for some currently unknown reason (gh-12)
+    with open(str(tmpdir / "test_doctest.py"), "w") as f:
+        f.write(textwrap.dedent("""
+        class SomeClass(object):
+            '''
+            >>> SomeClass()
+            <...
+            '''
+        """))
+
+    output = subprocess.check_output(
+        [sys.executable, '-mpytest', '-R', ':',
+         '--doctest-modules', '-v', 'test_doctest.py'],
+        cwd=str(tmpdir))
+
+    assert re.search(b"test_doctest\\.SomeClass\\s*PASSED", output), output
