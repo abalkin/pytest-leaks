@@ -12,3 +12,5 @@ repo_url: https://github.com/abalkin/pytest-leaks
 
 pages:
   - Home: index.md
+  - Changes: changes.md
+  - License: license.md
