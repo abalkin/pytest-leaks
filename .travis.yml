@@ -1,7 +1,7 @@
 # Config file for automatic testing at travis-ci.org
 
 language: generic
-
+dist: bionic
 addons:
   apt:
     packages:
