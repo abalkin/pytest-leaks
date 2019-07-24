@@ -7,6 +7,8 @@ addons:
     packages:
       - python2.7-dbg
       - python3.5-dbg
+      - python3.6-dbg
+      - python3.7-dbg
 
 install:
   - virtualenv --python=python3.5-dbg env
