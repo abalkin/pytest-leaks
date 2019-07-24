@@ -20,7 +20,7 @@ AUTHORS = [
 
 setup(
     name='pytest-leaks',
-    version='0.3.0',
+    version='0.3.1.dev0',
     author=", ".join(AUTHORS),
     author_email='alexander.belopolsky@gmail.com',
     maintainer=", ".join(AUTHORS),
