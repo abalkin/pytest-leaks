@@ -1,25 +1,30 @@
 # Config file for automatic testing at travis-ci.org
-
-language: generic
-dist: bionic
+language: minimal
 sudo: required 
-# addons:
-#   apt:
-#     packages:
-#       - python2.7-dbg
-#       - python3.5-dbg
-#       - python3.6-dbg
-#       - python3.7-dbg
+matrix:
+  include:
+  - os: linux
+    dist: xenial
+    env: PY=2.7
+  - os: linux
+    dist: xenial
+    env: PY=3.5
+  - os: linux
+    dist: bionic
+    env: PY=3.6
+  - os: linux
+    dist: bionic
+    env: PY=3.7
 
 install:
   - sudo apt-get update -y
-  - sudo apt-get install -y python3.6-dbg python3.7-dbg
-  - virtualenv --python=python3.6-dbg env
+  - sudo apt-get install -y python${PY}-dbg
+  - virtualenv --python=python${PY}-dbg env
   - source env/bin/activate
   - pip install tox
 
 script:
-  - tox
+  - tox -e python${PY}-dbg
 
 before_cache:
   - rm -rf $HOME/.cache/pip/log
