@@ -14,7 +14,7 @@ sudo: required
 install:
   - sudo apt-get update -y
   - sudo apt-get install -y python3.6-dbg python3.7-dbg
-  - virtualenv --python=python3.5-dbg env
+  - virtualenv --python=python3.6-dbg env
   - source env/bin/activate
   - pip install tox
 
