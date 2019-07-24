@@ -1,0 +1,89 @@
+{
+    "docs": [
+        {
+            "location": "/",
+            "text": "pytest-leaks - A pytest plugin to trace resource leaks\n\n\n\n\n\n\n\n\nA pytest plugin to trace resource leaks.\n\n\nUsage\n\n\nleaks:\n  -R LEAKS, --leaks=LEAKS\n                        runs each test several times and examines\n                        sys.gettotalrefcount() to see if the test appears to\n                        be leaking references. The argument should be of the\n                        form stab:run where 'stab' is the number of times the\n                        test is run to let gettotalrefcount settle down, 'run'\n                        is the number of times further it is run. These\n                        parameters all have defaults (5 and 4, respectively),\n                        and the minimal invocation is '-R :'.\n\n\n\nTo add a leaks test to your py.test session, add the \n-R\n option on the\ncommand line:\n\n\n$ cd examples; pytest-3 -v -R : test_faucet.py\n=========================== test session starts ===========================\nplatform linux -- Python 3.7.4, pytest-5.0.1, py-1.8.0, pluggy-0.12.0 --\ncachedir: .pytest_cache\nrootdir: ..\nplugins: leaks-0.3.0\ncollected 3 items\n\ntest_faucet.py::test_leaky_faucet LEAKED                            [ 33%]\ntest_faucet.py::test_broken_faucet FAILED                           [ 66%]\ntest_faucet.py::test_mended_faucet PASSED                           [100%]\n\n================================ FAILURES =================================\n___________________________ test_broken_faucet ____________________________\n\n    def test_broken_faucet():\n>       assert 0\nE       assert 0\n\ntest_faucet.py:6: AssertionError\n============================== leaks summary ==============================\nexamples/test_faucet.py::test_leaky_faucet: leaked references: [2, 2, 2, 2], memory blocks: [2, 2, 2, 2]\n============== 1 failed, 1 passed, 1 leaked in 0.32 seconds ===============\n\n\n\nThe test file used above contains the following code:\n\n\n$ cat test_faucet.py\ndrops = []\ndef test_leaky_faucet():\n    drops.append({})\n\ndef test_broken_faucet():\n    assert 0\n\ndef test_mended_faucet():\n    assert 1\n\n\n\nNote that pytest-leaks runs tests several times: if you see test failures\nthat are present only when using pytest-leaks, check that the test does\nnot modify any global state in a way that prevents it from running a\nsecond time.\n\n\nFeatures\n\n\n\n\nDetects memory leaks by running py.test tests repeatedly and\n  comparing total reference counts between the runs.\n\n\n\n\nRequirements\n\n\n\n\npy.test version >= 3;\n\n\nA debug build of Python (2.7 or >=3.5).\n\n\n\n\nOn Linux, Python debug builds can be found in packages \npythonX.Y-dbg\n\n(Debian and derivatives) and \npython3-debug\n (Fedora and derivatives).\n\n\nInstallation\n\n\nYou can install \"pytest-leaks\" via \npip\n from\n\nPyPI\n:\n\n\n$ pip install pytest-leaks\n\n\n\nContributing\n\n\nContributions are very welcome. Tests can be run with\n\ntox\n, please ensure the coverage\nat least stays the same before you submit a pull request.\n\n\nLicense\n\n\nDistributed under the terms of the \nMIT\n and\n\nPSF\n licenses, \"pytest-leaks\"\nis free and open source software.\n\n\nIssues\n\n\nIf you encounter any problems, please \nfile an issue\n\nalong with a detailed description.\n\n\nAcknowledgements\n\n\nThis \nPytest\n plugin was initially\ngenerated with \nCookiecutter\n\nalong with \n@hackebrot\n's\n\nCookiecutter-pytest-plugin\n\ntemplate.",
+            "title": "Home"
+        },
+        {
+            "location": "/#pytest-leaks-a-pytest-plugin-to-trace-resource-leaks",
+            "text": "A pytest plugin to trace resource leaks.",
+            "title": "pytest-leaks - A pytest plugin to trace resource leaks"
+        },
+        {
+            "location": "/#usage",
+            "text": "leaks:\n  -R LEAKS, --leaks=LEAKS\n                        runs each test several times and examines\n                        sys.gettotalrefcount() to see if the test appears to\n                        be leaking references. The argument should be of the\n                        form stab:run where 'stab' is the number of times the\n                        test is run to let gettotalrefcount settle down, 'run'\n                        is the number of times further it is run. These\n                        parameters all have defaults (5 and 4, respectively),\n                        and the minimal invocation is '-R :'.  To add a leaks test to your py.test session, add the  -R  option on the\ncommand line:  $ cd examples; pytest-3 -v -R : test_faucet.py\n=========================== test session starts ===========================\nplatform linux -- Python 3.7.4, pytest-5.0.1, py-1.8.0, pluggy-0.12.0 --\ncachedir: .pytest_cache\nrootdir: ..\nplugins: leaks-0.3.0\ncollected 3 items\n\ntest_faucet.py::test_leaky_faucet LEAKED                            [ 33%]\ntest_faucet.py::test_broken_faucet FAILED                           [ 66%]\ntest_faucet.py::test_mended_faucet PASSED                           [100%]\n\n================================ FAILURES =================================\n___________________________ test_broken_faucet ____________________________\n\n    def test_broken_faucet():\n>       assert 0\nE       assert 0\n\ntest_faucet.py:6: AssertionError\n============================== leaks summary ==============================\nexamples/test_faucet.py::test_leaky_faucet: leaked references: [2, 2, 2, 2], memory blocks: [2, 2, 2, 2]\n============== 1 failed, 1 passed, 1 leaked in 0.32 seconds ===============  The test file used above contains the following code:  $ cat test_faucet.py\ndrops = []\ndef test_leaky_faucet():\n    drops.append({})\n\ndef test_broken_faucet():\n    assert 0\n\ndef test_mended_faucet():\n    assert 1  Note that pytest-leaks runs tests several times: if you see test failures\nthat are present only when using pytest-leaks, check that the test does\nnot modify any global state in a way that prevents it from running a\nsecond time.",
+            "title": "Usage"
+        },
+        {
+            "location": "/#features",
+            "text": "Detects memory leaks by running py.test tests repeatedly and\n  comparing total reference counts between the runs.",
+            "title": "Features"
+        },
+        {
+            "location": "/#requirements",
+            "text": "py.test version >= 3;  A debug build of Python (2.7 or >=3.5).   On Linux, Python debug builds can be found in packages  pythonX.Y-dbg \n(Debian and derivatives) and  python3-debug  (Fedora and derivatives).",
+            "title": "Requirements"
+        },
+        {
+            "location": "/#installation",
+            "text": "You can install \"pytest-leaks\" via  pip  from PyPI :  $ pip install pytest-leaks",
+            "title": "Installation"
+        },
+        {
+            "location": "/#contributing",
+            "text": "Contributions are very welcome. Tests can be run with tox , please ensure the coverage\nat least stays the same before you submit a pull request.",
+            "title": "Contributing"
+        },
+        {
+            "location": "/#license",
+            "text": "Distributed under the terms of the  MIT  and PSF  licenses, \"pytest-leaks\"\nis free and open source software.",
+            "title": "License"
+        },
+        {
+            "location": "/#issues",
+            "text": "If you encounter any problems, please  file an issue \nalong with a detailed description.",
+            "title": "Issues"
+        },
+        {
+            "location": "/#acknowledgements",
+            "text": "This  Pytest  plugin was initially\ngenerated with  Cookiecutter \nalong with  @hackebrot 's Cookiecutter-pytest-plugin \ntemplate.",
+            "title": "Acknowledgements"
+        },
+        {
+            "location": "/changes/",
+            "text": "0.3.0 (2019-07-24)\n\n\n\n\nCompatibility with Pytest 4 and 5.\n\n\nCompatibility with Python 3.6 and above.\n\n\nBugfixes (#4, #5, #6, #7, #8, #10, #11, #14, #15).\n\n\n\n\n0.2.2 (2016-11-22)\n\n\n0.2.1 (2016-11-22)\n\n\n0.2.0 (2016-11-16)\n\n\n0.1.0 (2016-11-10)\n\n\nInitial release.",
+            "title": "Changes"
+        },
+        {
+            "location": "/changes/#030-2019-07-24",
+            "text": "Compatibility with Pytest 4 and 5.  Compatibility with Python 3.6 and above.  Bugfixes (#4, #5, #6, #7, #8, #10, #11, #14, #15).",
+            "title": "0.3.0 (2019-07-24)"
+        },
+        {
+            "location": "/changes/#022-2016-11-22",
+            "text": "",
+            "title": "0.2.2 (2016-11-22)"
+        },
+        {
+            "location": "/changes/#021-2016-11-22",
+            "text": "",
+            "title": "0.2.1 (2016-11-22)"
+        },
+        {
+            "location": "/changes/#020-2016-11-16",
+            "text": "",
+            "title": "0.2.0 (2016-11-16)"
+        },
+        {
+            "location": "/changes/#010-2016-11-10",
+            "text": "Initial release.",
+            "title": "0.1.0 (2016-11-10)"
+        },
+        {
+            "location": "/license/",
+            "text": "The MIT License (MIT)\n\n\nCopyright (c) 2016 Alexander Belopolsky\n\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n\n\nFurthermore, the files pytest_leaks/refleak_*.py and\npytest_leaks/support.py are covered by the PSF license:\n\n\n\n\n\n\nThis LICENSE AGREEMENT is between the Python Software Foundation\n(\"PSF\"), and the Individual or Organization (\"Licensee\") accessing and\notherwise using this software (\"Python\") in source or binary form and\nits associated documentation.\n\n\n\n\n\n\nSubject to the terms and conditions of this License Agreement, PSF hereby\ngrants Licensee a nonexclusive, royalty-free, world-wide license to reproduce,\nanalyze, test, perform and/or display publicly, prepare derivative works,\ndistribute, and otherwise use Python alone or in any derivative version,\nprovided, however, that PSF's License Agreement and PSF's notice of copyright,\ni.e., \"Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,\n2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019 Python Software Foundation;\nAll Rights Reserved\" are retained in Python alone or in any derivative version\nprepared by Licensee.\n\n\n\n\n\n\nIn the event Licensee prepares a derivative work that is based on\nor incorporates Python or any part thereof, and wants to make\nthe derivative work available to others as provided herein, then\nLicensee hereby agrees to include in any such work a brief summary of\nthe changes made to Python.\n\n\n\n\n\n\nPSF is making Python available to Licensee on an \"AS IS\"\nbasis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR\nIMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND\nDISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS\nFOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT\nINFRINGE ANY THIRD PARTY RIGHTS.\n\n\n\n\n\n\nPSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON\nFOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS\nA RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON,\nOR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.\n\n\n\n\n\n\nThis License Agreement will automatically terminate upon a material\nbreach of its terms and conditions.\n\n\n\n\n\n\nNothing in this License Agreement shall be deemed to create any\nrelationship of agency, partnership, or joint venture between PSF and\nLicensee.  This License Agreement does not grant permission to use PSF\ntrademarks or trade name in a trademark sense to endorse or promote\nproducts or services of Licensee, or any third party.\n\n\n\n\n\n\nBy copying, installing or otherwise using Python, Licensee\nagrees to be bound by the terms and conditions of this License\nAgreement.",
+            "title": "License"
+        }
+    ]
+}

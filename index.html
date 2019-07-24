@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A pytest plugin to trace resource leaks.">
+  <meta name="author" content="Alexander Belopolsky">
+  <link rel="shortcut icon" href="./img/favicon.ico">
+  <title>Home - pytest-leaks</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="./css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="./css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="./css/highlight.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Home";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = "/";
+  </script>
+  
+  <script src="./js/jquery-2.1.1.min.js"></script>
+  <script src="./js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="./js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> pytest-leaks</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href=".">Home</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#pytest-leaks-a-pytest-plugin-to-trace-resource-leaks">pytest-leaks - A pytest plugin to trace resource leaks</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#usage">Usage</a></li>
+        
+            <li><a class="toctree-l3" href="#features">Features</a></li>
+        
+            <li><a class="toctree-l3" href="#requirements">Requirements</a></li>
+        
+            <li><a class="toctree-l3" href="#installation">Installation</a></li>
+        
+            <li><a class="toctree-l3" href="#contributing">Contributing</a></li>
+        
+            <li><a class="toctree-l3" href="#license">License</a></li>
+        
+            <li><a class="toctree-l3" href="#issues">Issues</a></li>
+        
+            <li><a class="toctree-l3" href="#acknowledgements">Acknowledgements</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="changes/">Changes</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="license/">License</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">pytest-leaks</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/abalkin/pytest-leaks/edit/master/docs/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="pytest-leaks-a-pytest-plugin-to-trace-resource-leaks">pytest-leaks - A pytest plugin to trace resource leaks</h1>
+<p><a href="https://badge.fury.io/py/pytest-leaks"><img alt="See Package Info on PyPI" src="https://badge.fury.io/py/pytest-leaks.svg" /></a>
+<a href="https://travis-ci.org/abalkin/pytest-leaks"><img alt="See Build Status on Travis CI" src="https://travis-ci.org/abalkin/pytest-leaks.svg?branch=master" /></a>
+<a href="https://ci.appveyor.com/project/abalkin/pytest-leaks/branch/master"><img alt="See Build Status on AppVeyor" src="https://ci.appveyor.com/api/projects/status/github/abalkin/pytest-leaks?branch=master&amp;svg=true" /></a></p>
+<p>A pytest plugin to trace resource leaks.</p>
+<h2 id="usage">Usage</h2>
+<pre><code>leaks:
+  -R LEAKS, --leaks=LEAKS
+                        runs each test several times and examines
+                        sys.gettotalrefcount() to see if the test appears to
+                        be leaking references. The argument should be of the
+                        form stab:run where 'stab' is the number of times the
+                        test is run to let gettotalrefcount settle down, 'run'
+                        is the number of times further it is run. These
+                        parameters all have defaults (5 and 4, respectively),
+                        and the minimal invocation is '-R :'.
+</code></pre>
+<p>To add a leaks test to your py.test session, add the <code>-R</code> option on the
+command line:</p>
+<pre><code>$ cd examples; pytest-3 -v -R : test_faucet.py
+=========================== test session starts ===========================
+platform linux -- Python 3.7.4, pytest-5.0.1, py-1.8.0, pluggy-0.12.0 --
+cachedir: .pytest_cache
+rootdir: ..
+plugins: leaks-0.3.0
+collected 3 items
+
+test_faucet.py::test_leaky_faucet LEAKED                            [ 33%]
+test_faucet.py::test_broken_faucet FAILED                           [ 66%]
+test_faucet.py::test_mended_faucet PASSED                           [100%]
+
+================================ FAILURES =================================
+___________________________ test_broken_faucet ____________________________
+
+    def test_broken_faucet():
+&gt;       assert 0
+E       assert 0
+
+test_faucet.py:6: AssertionError
+============================== leaks summary ==============================
+examples/test_faucet.py::test_leaky_faucet: leaked references: [2, 2, 2, 2], memory blocks: [2, 2, 2, 2]
+============== 1 failed, 1 passed, 1 leaked in 0.32 seconds ===============
+</code></pre>
+<p>The test file used above contains the following code:</p>
+<pre><code>$ cat test_faucet.py
+drops = []
+def test_leaky_faucet():
+    drops.append({})
+
+def test_broken_faucet():
+    assert 0
+
+def test_mended_faucet():
+    assert 1
+</code></pre>
+<p>Note that pytest-leaks runs tests several times: if you see test failures
+that are present only when using pytest-leaks, check that the test does
+not modify any global state in a way that prevents it from running a
+second time.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Detects memory leaks by running py.test tests repeatedly and
+  comparing total reference counts between the runs.</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>py.test version >= 3;</li>
+<li>A debug build of Python (2.7 or >=3.5).</li>
+</ul>
+<p>On Linux, Python debug builds can be found in packages <code>pythonX.Y-dbg</code>
+(Debian and derivatives) and <code>python3-debug</code> (Fedora and derivatives).</p>
+<h2 id="installation">Installation</h2>
+<p>You can install "pytest-leaks" via <a href="https://pypi.python.org/pypi/pip/">pip</a> from
+<a href="https://pypi.python.org/pypi">PyPI</a>:</p>
+<pre><code>$ pip install pytest-leaks
+</code></pre>
+<h2 id="contributing">Contributing</h2>
+<p>Contributions are very welcome. Tests can be run with
+<a href="https://tox.readthedocs.io/en/latest/">tox</a>, please ensure the coverage
+at least stays the same before you submit a pull request.</p>
+<h2 id="license">License</h2>
+<p>Distributed under the terms of the <a href="http://opensource.org/licenses/MIT">MIT</a> and
+<a href="https://docs.python.org/3/license.html">PSF</a> licenses, "pytest-leaks"
+is free and open source software.</p>
+<h2 id="issues">Issues</h2>
+<p>If you encounter any problems, please <a href="https://github.com/abalkin/pytest-leaks/issues">file an issue</a>
+along with a detailed description.</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>This <a href="https://github.com/pytest-dev/pytest">Pytest</a> plugin was initially
+generated with <a href="https://github.com/audreyr/cookiecutter">Cookiecutter</a>
+along with <a href="https://github.com/hackebrot">@hackebrot</a>'s
+<a href="https://github.com/pytest-dev/cookiecutter-pytest-plugin">Cookiecutter-pytest-plugin</a>
+template.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="changes/" class="btn btn-neutral float-right" title="Changes">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+    
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/abalkin/pytest-leaks" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="changes/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script src="./js/theme.js"></script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 0.16.3
+Build Date UTC : 2019-07-24 13:30:07
+-->
