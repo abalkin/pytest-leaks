@@ -234,3 +234,34 @@ def test_fixture_setup_teardown(testdir):
     result.stdout.fnmatch_lines([
         "*::test_sth PASSED*"
     ])
+
+
+def test_output_capture(testdir):
+    test_code = """
+    def test_output_capture_default():
+        print('Hello there.')
+
+    def test_output_capture_capsys(capsys):
+        print('Hello here.')
+        out, err = capsys.readouterr()
+        assert out.strip() == 'Hello here.'
+        print('Hello where.')
+
+    def test_output_capture_capfd(capfd):
+        print('Hello their.')
+        out, err = capfd.readouterr()
+        assert out.strip() == 'Hello their.'
+        print('Hello these.')
+    """
+
+    testdir.makepyfile(test_code)
+
+    result = testdir.runpytest_subprocess(
+        '-R', ':', '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        "*::test_output_capture_default PASSED*",
+        "*::test_output_capture_capsys PASSED*",
+        "*::test_output_capture_capfd PASSED*",
+    ])

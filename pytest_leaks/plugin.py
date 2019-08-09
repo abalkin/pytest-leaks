@@ -137,7 +137,11 @@ class LeakChecker(object):
                 item.funcargs = None
 
             if doctest_original_globs is not None:
+                # Restore doctest environment
                 item.dtest.globs.update(doctest_original_globs)
+
+            # Clear pytest captured output etc., if any
+            item._report_sections = []
 
         if hasattr(self.runner.CallInfo, 'from_call'):
             # pytest >= 4
