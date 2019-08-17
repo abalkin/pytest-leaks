@@ -5,27 +5,35 @@ matrix:
   include:
   - os: linux
     dist: xenial
-    env: [P=2, p=7]
+    env: [PYVER=2.7]
   - os: linux
     dist: xenial
-    env: [P=3, p=5]
+    env: [PYVER=3.5]
   - os: linux
     dist: bionic
-    env: [P=3, p=6]
+    env: [PYVER=3.6]
   - os: linux
     dist: bionic
-    env: [P=3, p=7]
+    env: [PYVER=3.7]
 
 install:
   - sudo apt-get update -y
-  - sudo apt-get install -y python${P}.${p}-dbg
-  - virtualenv --python=python${P}.${p}-dbg env
+  - sudo apt-get install -y python${PYVER}-dbg
+  - virtualenv --python=python${PYVER}-dbg env
   - source env/bin/activate
   - pip install tox
 
 script:
-  - tox -e python${P}.${p}-dbg
-  - 'if [ "${P}" = "3" ]; then tox -e python${P}-dbg-pytest3,python${P}-dbg-pytest4,python${P}-dbg-pytest5; fi'
+  - |
+    if [ "${PYVER}" = "2.7" ]; then
+       ENVS=python${PYVER}-dbg
+    elif [ "${PYVER}" = "3.5" ]; then
+       ENVS=python${PYVER}-dbg,python3-dbg-pytest3,python3-dbg-pytest4
+    else
+       ENVS=python${PYVER}-dbg,python3-dbg-pytest3,python3-dbg-pytest4,python3-dbg-pytest5
+    fi
+  - tox -e "$ENVS"
+
 before_cache:
   - rm -rf $HOME/.cache/pip/log
 
