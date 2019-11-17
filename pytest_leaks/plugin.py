@@ -70,6 +70,10 @@ def pytest_configure(config):
         checker = LeakChecker(config)
         config.pluginmanager.register(checker, 'leaks_checker')
 
+    config.addinivalue_line(
+        "markers",
+        "no_leak_check: don't run pytest-leaks on this test")
+
 
 @pytest.fixture
 def leaks_checker(request):
@@ -109,6 +113,11 @@ class LeakChecker(object):
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_protocol(self, item, nextitem):
+        marker = item.get_closest_marker('no_leak_check')
+        if marker:
+            # Don't run leak check
+            return
+
         when = ["setup"]
         hook = item.ihook
 
