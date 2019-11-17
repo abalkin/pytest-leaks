@@ -15,12 +15,21 @@ matrix:
   - os: linux
     dist: bionic
     env: [PYVER=3.7]
+  - os: linux
+    dist: bionic
+    env: [PYVER=3.8]
 
 install:
   - sudo apt-get update -y
-  - sudo apt-get install -y python${PYVER}-dbg
+  - |
+    if [ "${TRAVIS_DIST}" = "xenial" ]; then
+        sudo apt-get install -y python${PYVER}-dbg
+    else
+        sudo apt-get install -y python${PYVER}-dbg python3-distutils
+    fi
   - virtualenv --python=python${PYVER}-dbg env
   - source env/bin/activate
+  - ln -s python3 "$VIRTUAL_ENV/bin/python3-dbg"
   - pip install tox
 
 script:
@@ -32,7 +41,7 @@ script:
     else
        ENVS=python${PYVER}-dbg,python3-dbg-pytest3,python3-dbg-pytest4,python3-dbg-pytest5
     fi
-  - tox -e "$ENVS"
+  - tox --skip-missing-interpreters false -e "$ENVS"
 
 before_cache:
   - rm -rf $HOME/.cache/pip/log
