@@ -1,3 +1,9 @@
+# 0.3.1 (2019-11-27)
+
+- Add `pytest.mark.no_leak_check` for skipping leak checks (#29, #31).
+- Fix issues with pytest output capture (#25).
+- Fix pytest-xdist compatibility (#33).
+
 # 0.3.0 (2019-07-24)
 
 - Compatibility with Pytest 4 and 5.
