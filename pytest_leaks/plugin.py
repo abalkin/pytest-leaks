@@ -72,7 +72,9 @@ def pytest_configure(config):
 
     config.addinivalue_line(
         "markers",
-        "no_leak_check: don't run pytest-leaks on this test")
+        "no_leak_check(fail=False, reason=""): don't run pytest-leaks on "
+        "this test, optionally failing the leak test without checking with "
+        "some reason given.")
 
 
 @pytest.fixture
@@ -116,6 +118,9 @@ class LeakChecker(object):
         marker = item.get_closest_marker('no_leak_check')
         if marker:
             # Don't run leak check
+            if marker.kwargs.get('fail'):
+                reason = marker.kwargs.get('reason', "")
+                self.leaks[item.nodeid] = {'(not checked)': reason}
             return
 
         when = ["setup"]
