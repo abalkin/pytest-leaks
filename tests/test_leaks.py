@@ -265,3 +265,29 @@ def test_output_capture(testdir):
         "*::test_output_capture_capsys PASSED*",
         "*::test_output_capture_capfd PASSED*",
     ])
+
+
+def test_marker_skip_leaks(testdir):
+    test_code = """
+    import pytest
+
+    garbage = []
+
+    @pytest.mark.no_leak_check
+    def test_leaking_skip():
+        garbage.append(None)
+
+    def test_leaking_noskip():
+        garbage.append(None)
+    """
+
+    testdir.makepyfile(test_code)
+
+    result = testdir.runpytest_subprocess(
+        '-R', ':', '-v'
+    )
+
+    result.stdout.fnmatch_lines([
+        "*::test_leaking_skip PASSED*",
+        "*::test_leaking_noskip LEAKED*",
+    ])
