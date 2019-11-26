@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import sys
 import re
+import json
 
 from collections import OrderedDict
 
@@ -106,7 +107,9 @@ class LeakChecker(object):
 
         # Get access to the builtin "runner" plugin.
         self.runner = config.pluginmanager.get_plugin('runner')
-        self.leaks = {}  # nodeid -> leaks
+
+        # Temporary storage for leak data
+        self._leaks = {}  # item.nodeid -> result
 
     def hunt_leaks(self, func):
         return hunt_leaks(func, self.stab, self.run)
@@ -177,16 +180,40 @@ class LeakChecker(object):
                                           location=item.location)
             return True  # skip pytest implementation
         else:
-            self.leaks[item.nodeid] = call.result
+            self._leaks[item.nodeid] = call.result
 
         return  # proceed to pytest implementation
+
+    @pytest.hookimpl(hookwrapper=True)
+    def pytest_runtest_makereport(self, item, call):
+        outcome = yield
+
+        # Append leak report in 'call' phase
+        if call.when != 'call':
+            return
+
+        report = outcome.get_result()
+        leaks = self._leaks.pop(item.nodeid, None)
+        if leaks:
+            report.sections.append(('pytest-leaks', json.dumps(leaks)))
+            outcome.force_result(report)
+
+    def _leaks_from_report(self, report):
+        if report.when != "call":
+            return None
+
+        leaks = [data for key, data in report.get_sections('pytest-leaks')
+                 if key == 'pytest-leaks']
+        if leaks:
+            return Leaks(json.loads(leaks[0]))
+
+        return None
 
     @pytest.hookimpl(hookwrapper=True, trylast=True)
     def pytest_report_teststatus(self, report):
         outcome = yield
         if report.when == 'call' and report.outcome == 'passed':
-            leaks = self.leaks.get(report.nodeid)
-            if leaks:
+            if self._leaks_from_report(report):
                 # cat, letter, word
                 outcome.force_result(('leaked', 'L', 'LEAKED'))
 
@@ -194,19 +221,19 @@ class LeakChecker(object):
     def pytest_terminal_summary(self, terminalreporter, exitstatus):
         tr = terminalreporter
 
-        leaked = list(tr.getreports('leaked'))
-
         if 'pytest_sugar' in type(tr).__module__:
             # pytest-sugar doesn't run pytest_report_teststatus: ensure
             # leak summary gets shown
-            for rep in tr.getreports('passed'):
-                if self.leaks.get(rep.nodeid) and rep.when == "call":
-                    leaked.append(rep)
+            leaked = list(tr.getreports('passed'))
+        else:
+            leaked = list(tr.getreports('leaked'))
 
         if leaked:
             tr.write_sep("=", 'leaks summary', cyan=True)
             for rep in leaked:
-                tr.line("%s: %s" % (rep.nodeid, Leaks(self.leaks[rep.nodeid])))
+                leaks = self._leaks_from_report(rep)
+                if leaks:
+                    tr.line("%s: %s" % (rep.nodeid, leaks))
 
 
 class Namespace(object):

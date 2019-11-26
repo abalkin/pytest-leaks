@@ -101,6 +101,21 @@ def test_leaks_checker(testdir):
     assert result.ret == 0
 
 
+def test_xdist_compatibility(testdir, request):
+    if not request.config.pluginmanager.hasplugin('xdist'):
+        pytest.skip('test requires pytest-xdist')
+
+    testdir.makepyfile(test_leaks_code)
+    testdir.plugins = ['xdist', 'leaks']
+    result = testdir.runpytest_subprocess('-R', ':', '-v', '-n2')
+    result.stdout.fnmatch_lines([
+        '*LEAKED*::test_refleaks*',
+        '*leaks summary*',
+        '*:test_refleaks: leaked references*',
+    ])
+    assert result.ret == 0
+
+
 leaking = None
 test_leaks_code = """
 garbage = []
