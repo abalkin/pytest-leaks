@@ -294,6 +294,14 @@ def test_marker_skip_leaks(testdir):
 
     def test_leaking_noskip():
         garbage.append(None)
+
+    @pytest.mark.no_leak_check(fail=True, reason="something")
+    def test_leaking_skip_fail():
+        pass
+
+    @pytest.mark.no_leak_check(fail=False, reason="something")
+    def test_leaking_skip_success():
+        garbage.append(None)
     """
 
     testdir.makepyfile(test_code)
@@ -305,4 +313,9 @@ def test_marker_skip_leaks(testdir):
     result.stdout.fnmatch_lines([
         "*::test_leaking_skip PASSED*",
         "*::test_leaking_noskip LEAKED*",
+        "*::test_leaking_skip_fail LEAKED*",
+        "*::test_leaking_skip_success PASSED*",
+        "*leaks summary*",
+        "*::test_leaking_noskip: leaked references*",
+        "*::test_leaking_skip_fail: leaked*something*",
     ])

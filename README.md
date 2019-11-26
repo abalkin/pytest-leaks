@@ -27,12 +27,13 @@ command line:
     platform linux -- Python 3.7.4, pytest-5.0.1, py-1.8.0, pluggy-0.12.0 --
     cachedir: .pytest_cache
     rootdir: ..
-    plugins: leaks-0.3.0
+    plugins: leaks-0.3.1
     collected 3 items
 
-    test_faucet.py::test_leaky_faucet LEAKED                            [ 33%]
-    test_faucet.py::test_broken_faucet FAILED                           [ 66%]
-    test_faucet.py::test_mended_faucet PASSED                           [100%]
+    test_faucet.py::test_leaky_faucet LEAKED                            [ 25%]
+    test_faucet.py::test_broken_faucet FAILED                           [ 50%]
+    test_faucet.py::test_mended_faucet PASSED                           [ 75%]
+    test_faucet.py::test_skip_marker_example LEAKED                     [100%]
 
     ================================ FAILURES =================================
     ___________________________ test_broken_faucet ____________________________
@@ -40,11 +41,12 @@ command line:
         def test_broken_faucet():
     >       assert 0
     E       assert 0
-    
-    test_faucet.py:6: AssertionError
+
+    examples/test_faucet.py:8: AssertionError
     ============================== leaks summary ==============================
     examples/test_faucet.py::test_leaky_faucet: leaked references: [2, 2, 2, 2], memory blocks: [2, 2, 2, 2]
-    ============== 1 failed, 1 passed, 1 leaked in 0.32 seconds ===============
+    examples/test_faucet.py::test_skip_marker_example: leaked (not checked): 'not testing'
+    ================== 1 failed, 1 passed, 2 leaked in 0.50s ==================
 
 The test file used above contains the following code:
 
@@ -58,6 +60,10 @@ The test file used above contains the following code:
     
     def test_mended_faucet():
         assert 1
+
+    @pytest.mark.no_leak_check(fail=True, reason="not testing")
+    def test_skip_marker_example():
+        pass
 
 Note that pytest-leaks runs tests several times: if you see test failures
 that are present only when using pytest-leaks, check that the test does
