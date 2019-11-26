@@ -123,7 +123,7 @@ class LeakChecker(object):
             # Don't run leak check
             if marker.kwargs.get('fail'):
                 reason = marker.kwargs.get('reason', "")
-                self.leaks[item.nodeid] = {'(not checked)': reason}
+                self._leaks[item.nodeid] = {'(not checked)': reason}
             return
 
         when = ["setup"]
