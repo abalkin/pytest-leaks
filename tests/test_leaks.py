@@ -3,8 +3,9 @@ import sys
 
 import pytest
 
-if not hasattr(sys, 'gettotalrefcount'):
-    pytest.fail('python debug build compiled with --with-pydebug is required')
+pytestmark = pytest.mark.skipif(
+    not hasattr(sys, 'gettotalrefcount'),
+    reason='python debug build compiled with --with-pydebug is required')
 
 
 def test_config_options_fixture(testdir):
