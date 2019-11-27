@@ -22,18 +22,18 @@ A pytest plugin to trace resource leaks.
 To add a leaks test to your py.test session, add the `-R` option on the
 command line:
 
-    $ cd examples; pytest-3 -v -R : test_faucet.py
+    $ python3-debug -mpytest -v -R : examples/test_faucet.py
     =========================== test session starts ===========================
-    platform linux -- Python 3.7.4, pytest-5.0.1, py-1.8.0, pluggy-0.12.0 --
+    platform linux -- Python 3.7.5, pytest-5.3.1, py-1.8.0, pluggy-0.13.1 -- .
     cachedir: .pytest_cache
-    rootdir: ..
+    rootdir: .
     plugins: leaks-0.3.1
-    collected 3 items
+    collected 4 items
 
-    test_faucet.py::test_leaky_faucet LEAKED                            [ 25%]
-    test_faucet.py::test_broken_faucet FAILED                           [ 50%]
-    test_faucet.py::test_mended_faucet PASSED                           [ 75%]
-    test_faucet.py::test_skip_marker_example LEAKED                     [100%]
+    examples/test_faucet.py::test_leaky_faucet LEAKED                   [ 25%]
+    examples/test_faucet.py::test_broken_faucet FAILED                  [ 50%]
+    examples/test_faucet.py::test_mended_faucet PASSED                  [ 75%]
+    examples/test_faucet.py::test_skip_marker_example LEAKED            [100%]
 
     ================================ FAILURES =================================
     ___________________________ test_broken_faucet ____________________________
@@ -48,9 +48,12 @@ command line:
     examples/test_faucet.py::test_skip_marker_example: leaked (not checked): 'not testing'
     ================== 1 failed, 1 passed, 2 leaked in 0.50s ==================
 
-The test file used above contains the following code:
+Note that a debug build of Python must be used.  The test file used
+above contains the following code:
 
     $ cat test_faucet.py
+    import pytest
+
     drops = []
     def test_leaky_faucet():
         drops.append({})
@@ -106,11 +109,3 @@ is free and open source software.
 
 If you encounter any problems, please [file an issue](https://github.com/abalkin/pytest-leaks/issues)
 along with a detailed description.
-
-## Acknowledgements
-
-This [Pytest](https://github.com/pytest-dev/pytest) plugin was initially
-generated with [Cookiecutter](https://github.com/audreyr/cookiecutter)
-along with [@hackebrot](https://github.com/hackebrot)'s
-[Cookiecutter-pytest-plugin](https://github.com/pytest-dev/cookiecutter-pytest-plugin)
-template.
